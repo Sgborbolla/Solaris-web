@@ -50,7 +50,6 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       id="pagination"
       class="hidden flex items-center justify-center gap-3 mt-10 md:mt-12"
     >
-
       <button
         id="previous-btn"
         type="button"
@@ -82,22 +81,15 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       >
         Siguiente →
       </button>
-
     </div>
 
   </div>
 </PublicLayout>
 
-<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script is:inline>
-  const SUPABASE_URL = 'https://djyysffxpbvbfkcmrhta.supabase.co';
-
-  const SUPABASE_ANON_KEY =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cGFiYXNlIiwicmVmIjoiZGp5eXNlZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk3z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo';
+<script>
+  import { supabase } from '../lib/supabase.js';
 
   const PRODUCTS_PER_PAGE = 14;
-  const TOTAL_PAGES = 2;
   const MAX_PRODUCTS = 28;
 
   let allProducts = [];
@@ -114,11 +106,6 @@ import PublicLayout from '../layouts/PublicLayout.astro';
   const previousBtn = document.getElementById('previous-btn');
   const nextBtn = document.getElementById('next-btn');
   const retryBtn = document.getElementById('retry-btn');
-
-  const sb = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
 
   function escapeHtml(value) {
     const div = document.createElement('div');
@@ -151,12 +138,14 @@ import PublicLayout from '../layouts/PublicLayout.astro';
           class="card overflow-hidden group hover:shadow-xl transition-all duration-300 block"
           aria-label="Ver detalles de ${escapeHtml(name)}"
         >
+
           <div class="aspect-square overflow-hidden bg-solaris-gray">
             <img
               src="${escapeHtml(image)}"
               alt="${escapeHtml(name)}"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
+              onerror="this.src='https://via.placeholder.com/600x600?text=Solaris'"
             />
           </div>
 
@@ -181,6 +170,7 @@ import PublicLayout from '../layouts/PublicLayout.astro';
             </div>
 
           </div>
+
         </a>
       `;
     }).join('');
@@ -189,7 +179,12 @@ import PublicLayout from '../layouts/PublicLayout.astro';
 
     loading.classList.add('hidden');
     grid.classList.remove('hidden');
-    pagination.classList.remove('hidden');
+
+    if (allProducts.length > PRODUCTS_PER_PAGE) {
+      pagination.classList.remove('hidden');
+    } else {
+      pagination.classList.add('hidden');
+    }
   }
 
   function updatePagination() {
@@ -212,7 +207,12 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       );
 
       previousBtn.classList.add('hidden');
-      nextBtn.classList.remove('hidden');
+
+      if (allProducts.length > PRODUCTS_PER_PAGE) {
+        nextBtn.classList.remove('hidden');
+      } else {
+        nextBtn.classList.add('hidden');
+      }
 
     } else {
       page1.classList.add(
@@ -232,7 +232,11 @@ import PublicLayout from '../layouts/PublicLayout.astro';
   }
 
   function goToPage(page) {
-    if (page < 1 || page > TOTAL_PAGES) {
+    const totalPages = Math.ceil(
+      allProducts.length / PRODUCTS_PER_PAGE
+    );
+
+    if (page < 1 || page > totalPages) {
       return;
     }
 
@@ -254,11 +258,13 @@ import PublicLayout from '../layouts/PublicLayout.astro';
     pagination.classList.add('hidden');
 
     try {
-      const { data, error } = await sb
+      const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id,name,category,image,is_active,created_at')
         .eq('is_active', true)
-        .order('created_at', { ascending: true })
+        .order('created_at', {
+          ascending: true
+        })
         .limit(MAX_PRODUCTS);
 
       if (error) {
@@ -273,16 +279,23 @@ import PublicLayout from '../layouts/PublicLayout.astro';
         return;
       }
 
-      allProducts = allProducts.slice(0, MAX_PRODUCTS);
-
       currentPage = 1;
 
       renderProducts();
 
-    } catch (err) {
-      console.error('Error cargando productos desde Supabase:', err);
+      console.log(
+        `Solaris: ${allProducts.length} productos cargados correctamente.`
+      );
+
+    } catch (error) {
+      console.error(
+        'Solaris: error cargando productos desde Supabase:',
+        error
+      );
 
       loading.classList.add('hidden');
+      grid.classList.add('hidden');
+      pagination.classList.add('hidden');
       errorBox.classList.remove('hidden');
     }
   }
