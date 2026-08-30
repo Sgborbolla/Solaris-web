@@ -1,28 +1,5 @@
 ---
 import PublicLayout from '../layouts/PublicLayout.astro';
-
-const images = [
-  'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
-  'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=400',
-  'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=400',
-  'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=400'
-];
-
-const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
-
-const names = [
-  'Panel Monocristalino 450W',
-  'Inversor Híbrido 5kW',
-  'Batería Litio 48V',
-  'Cable Solar 10mm'
-];
-
-const products = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  title: `${names[i % 4]} - Modelo ${i + 1}`,
-  category: categories[i % 4],
-  image: images[i % 4]
-}));
 ---
 
 <PublicLayout
@@ -44,47 +21,321 @@ const products = Array.from({ length: 20 }, (_, i) => ({
       </p>
     </div>
 
-    <!-- Catálogo -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+    <!-- Estado de carga -->
+    <div id="products-loading" class="text-center py-12">
+      <div class="inline-block w-8 h-8 border-4 border-solaris-border border-t-solaris-primary rounded-full animate-spin"></div>
+      <p class="mt-4 text-solaris-text">Cargando productos...</p>
+    </div>
 
-      {products.map((p) => (
+    <!-- Catálogo -->
+    <div
+      id="products-grid"
+      class="hidden grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+    >
+    </div>
+
+    <!-- Sin productos -->
+    <div id="products-empty" class="hidden text-center py-12">
+      <p class="text-lg text-solaris-text">
+        No hay productos disponibles.
+      </p>
+    </div>
+
+    <!-- Error -->
+    <div id="products-error" class="hidden text-center py-12">
+      <p class="text-lg text-red-500">
+        No se pudieron cargar los productos.
+      </p>
+      <button
+        id="retry-btn"
+        class="mt-4 btn-primary"
+      >
+        Intentar nuevamente
+      </button>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <div
+      id="pagination"
+      class="hidden flex items-center justify-center gap-3 mt-10 md:mt-12"
+    >
+
+      <!-- Anterior -->
+      <button
+        id="previous-btn"
+        class="hidden px-3 md:px-4 py-2 text-sm font-semibold text-solaris-dark hover:text-solaris-primary transition-colors"
+      >
+        ← Anterior
+      </button>
+
+      <!-- Página 1 -->
+      <button
+        id="page-1"
+        class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all"
+      >
+        1
+      </button>
+
+      <!-- Página 2 -->
+      <button
+        id="page-2"
+        class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all"
+      >
+        2
+      </button>
+
+      <!-- Siguiente -->
+      <button
+        id="next-btn"
+        class="hidden px-3 md:px-4 py-2 text-sm font-semibold text-solaris-dark hover:text-solaris-primary transition-colors"
+      >
+        Siguiente →
+      </button>
+
+    </div>
+
+  </div>
+</PublicLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script is:inline>
+  const SUPABASE_URL = 'https://djyysffxpbvbfkcmrhta.supabase.co';
+
+  const SUPABASE_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6MTc4ODAyNzkxNiwiaWF0IjoxNzg4MDI3OTE2LCJleHAiOjIxMDM2MDM5MTZ9.Vrtk3z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo';
+
+  const PRODUCTS_PER_PAGE = 14;
+
+  let allProducts = [];
+  let currentPage = 1;
+
+  const loading = document.getElementById('products-loading');
+  const grid = document.getElementById('products-grid');
+  const empty = document.getElementById('products-empty');
+  const errorBox = document.getElementById('products-error');
+  const pagination = document.getElementById('pagination');
+
+  const page1 = document.getElementById('page-1');
+  const page2 = document.getElementById('page-2');
+  const previousBtn = document.getElementById('previous-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const retryBtn = document.getElementById('retry-btn');
+
+  const sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value ?? '';
+    return div.innerHTML;
+  }
+
+  function renderProducts() {
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const end = start + PRODUCTS_PER_PAGE;
+
+    const pageProducts = allProducts.slice(start, end);
+
+    grid.innerHTML = pageProducts.map((p) => {
+
+      const image =
+        p.image ||
+        'https://via.placeholder.com/600x600?text=Solaris';
+
+      const name =
+        p.name ||
+        'Producto Solaris';
+
+      const category =
+        p.category ||
+        'Solar';
+
+      return `
         <a
-          href={`/productos/${p.id}`}
+          href="/productos/${p.id}"
           class="card overflow-hidden group hover:shadow-xl transition-all duration-300 block"
-          aria-label={`Ver detalles de ${p.title}`}
+          aria-label="Ver detalles de ${escapeHtml(name)}"
         >
 
-          <!-- Imagen -->
           <div class="aspect-square overflow-hidden bg-solaris-gray">
+
             <img
-              src={p.image}
-              alt={p.title}
+              src="${escapeHtml(image)}"
+              alt="${escapeHtml(name)}"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
+
           </div>
 
-          <!-- Información -->
           <div class="p-3 md:p-4">
 
-            <span class="text-[10px] md:text-xs font-bold text-solaris-primary uppercase tracking-wider">
-              {p.category}
+            <span
+              class="text-[10px] md:text-xs font-bold text-solaris-primary uppercase tracking-wider"
+            >
+              ${escapeHtml(category)}
             </span>
 
-            <h2 class="text-sm md:text-base font-bold text-solaris-dark mt-1 md:mt-2 leading-tight line-clamp-2">
-              {p.title}
+            <h2
+              class="text-sm md:text-base font-bold text-solaris-dark mt-1 md:mt-2 leading-tight line-clamp-2"
+            >
+              ${escapeHtml(name)}
             </h2>
 
-            <div class="mt-3 w-full py-2 px-3 bg-solaris-dark text-white text-xs md:text-sm font-semibold rounded-card text-center group-hover:bg-solaris-primary transition-colors">
+            <div
+              class="mt-3 w-full py-2 px-3 bg-solaris-dark text-white text-xs md:text-sm font-semibold rounded-card text-center group-hover:bg-solaris-primary transition-colors"
+            >
               Ver Detalles
             </div>
 
           </div>
 
         </a>
-      ))}
+      `;
+    }).join('');
 
-    </div>
+    updatePagination();
 
-  </div>
-</PublicLayout>
+    grid.classList.remove('hidden');
+    loading.classList.add('hidden');
+    pagination.classList.remove('hidden');
+  }
+
+  function updatePagination() {
+
+    // Página activa AZUL
+    const activeClasses =
+      'bg-solaris-primary text-white shadow-md';
+
+    // Página inactiva AMARILLA
+    const inactiveClasses =
+      'bg-solaris-accent text-solaris-dark';
+
+    page1.className =
+      'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all';
+
+    page2.className =
+      'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all';
+
+    if (currentPage === 1) {
+
+      page1.classList.add(
+        'bg-solaris-primary',
+        'text-white',
+        'shadow-md'
+      );
+
+      page2.classList.add(
+        'bg-solaris-accent',
+        'text-solaris-dark'
+      );
+
+      previousBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+
+    } else {
+
+      page1.classList.add(
+        'bg-solaris-accent',
+        'text-solaris-dark'
+      );
+
+      page2.classList.add(
+        'bg-solaris-primary',
+        'text-white',
+        'shadow-md'
+      );
+
+      previousBtn.classList.remove('hidden');
+      nextBtn.classList.add('hidden');
+    }
+  }
+
+  function goToPage(page) {
+
+    if (page < 1 || page > 2) return;
+
+    currentPage = page;
+
+    renderProducts();
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  async function loadProducts() {
+
+    loading.classList.remove('hidden');
+    grid.classList.add('hidden');
+    empty.classList.add('hidden');
+    errorBox.classList.add('hidden');
+    pagination.classList.add('hidden');
+
+    try {
+
+      const { data, error } = await sb
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      allProducts = data || [];
+
+      if (allProducts.length === 0) {
+
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      /*
+       * Solaris utiliza exactamente 2 páginas.
+       * Se muestran como máximo 28 productos:
+       * 14 en página 1 y 14 en página 2.
+       */
+      allProducts = allProducts.slice(0, 28);
+
+      currentPage = 1;
+
+      renderProducts();
+
+    } catch (err) {
+
+      console.error('Error cargando productos:', err);
+
+      loading.classList.add('hidden');
+      errorBox.classList.remove('hidden');
+    }
+  }
+
+  page1.addEventListener('click', () => {
+    goToPage(1);
+  });
+
+  page2.addEventListener('click', () => {
+    goToPage(2);
+  });
+
+  previousBtn.addEventListener('click', () => {
+    goToPage(1);
+  });
+
+  nextBtn.addEventListener('click', () => {
+    goToPage(2);
+  });
+
+  retryBtn.addEventListener('click', () => {
+    loadProducts();
+  });
+
+  loadProducts();
+</script>
