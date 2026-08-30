@@ -1,0 +1,154 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase } from '../../lib/supabase.js';
+const { data: faqs } = await supabase.from('faq_questions').select('*').order('order_num');
+---
+<AdminLayout title="FAQ" activeTab="configuracion">
+  <header class="bg-white border-b border-solaris-border shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <a href="/admin/dashboard" class="text-solaris-dark font-bold text-xl">SOLARIS</a>
+      <button id="logout-btn" class="text-sm text-red-500 font-medium">Salir</button>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-solaris-dark">❓ Preguntas Frecuentes</h1>
+      <button id="add-btn" class="btn-primary">+ Agregar</button>
+    </div>
+
+    <div id="modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-card w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
+        <h2 id="modal-title" class="text-2xl font-bold text-solaris-dark mb-6">Editar Pregunta</h2>
+        <form id="faq-form" class="space-y-4">
+          <input type="hidden" id="faq-id" />
+          <div>
+            <label class="block text-sm font-semibold mb-2">Pregunta</label>
+            <textarea id="faq-question" rows="2" required class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Respuesta</label>
+            <textarea id="faq-answer" rows="5" required class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Orden (número)</label>
+            <input type="number" id="faq-order" value="0" class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button type="submit" class="btn-primary flex-1 justify-center">Guardar</button>
+            <button type="button" id="cancel-btn" class="flex-1 py-3 border border-solaris-border rounded-card text-solaris-text">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      {(faqs || []).map((f, index) => (
+        <div class="card p-5">
+          <div class="flex justify-between items-start gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xs bg-solaris-primary/10 text-solaris-primary px-2 py-1 rounded-pill font-semibold">#{f.order_num || index + 1}</span>
+              </div>
+              <p class="font-bold text-solaris-dark">{f.question}</p>
+              <p class="text-sm text-solaris-text mt-2">{f.answer}</p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button data-index={index} class="edit-btn bg-solaris-primary text-white px-3 py-2 rounded-card text-xs font-semibold">Editar</button>
+              <button data-id={f.id} class="delete-btn bg-red-500 text-white px-3 py-2 rounded-card text-xs font-semibold">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-card shadow-lg z-50"></div>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script is:inline define:vars={{ faqs }}>
+    const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+    sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
+    document.getElementById('logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // Array de FAQs desde el servidor
+    const faqsData = faqs || [];
+
+    const modal = document.getElementById('modal');
+    
+    // Agregar nuevo
+    document.getElementById('add-btn').addEventListener('click', () => {
+      document.getElementById('modal-title').textContent = 'Agregar Pregunta';
+      document.getElementById('faq-form').reset();
+      document.getElementById('faq-id').value = '';
+      document.getElementById('faq-order').value = faqsData.length + 1;
+      modal.classList.remove('hidden');
+    });
+    
+    // Cancelar
+    document.getElementById('cancel-btn').addEventListener('click', () => modal.classList.add('hidden'));
+
+    // Editar - usar index en lugar de data attributes
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = parseInt(btn.dataset.index);
+        const faq = faqsData[index];
+        if (!faq) return;
+        
+        document.getElementById('modal-title').textContent = 'Editar Pregunta';
+        document.getElementById('faq-id').value = faq.id;
+        document.getElementById('faq-question').value = faq.question;
+        document.getElementById('faq-answer').value = faq.answer;
+        document.getElementById('faq-order').value = faq.order_num || 0;
+        modal.classList.remove('hidden');
+      });
+    });
+
+    // Eliminar
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('¿Eliminar esta pregunta?')) return;
+        const { error } = await sb.from('faq_questions').delete().eq('id', btn.dataset.id);
+        if (error) {
+          showToast('❌ Error: ' + error.message);
+        } else {
+          showToast('✅ Eliminado');
+          setTimeout(() => location.reload(), 1000);
+        }
+      });
+    });
+
+    // Guardar
+    document.getElementById('faq-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('faq-id').value;
+      const data = {
+        question: document.getElementById('faq-question').value,
+        answer: document.getElementById('faq-answer').value,
+        order_num: parseInt(document.getElementById('faq-order').value) || 0,
+        is_active: true
+      };
+      
+      let result;
+      if (id) {
+        result = await sb.from('faq_questions').update(data).eq('id', id);
+      } else {
+        result = await sb.from('faq_questions').insert(data);
+      }
+      
+      if (result.error) {
+        showToast('❌ Error: ' + result.error.message);
+      } else {
+        showToast('✅ Guardado');
+        setTimeout(() => location.reload(), 1000);
+      }
+    });
+  </script>
+</AdminLayout>

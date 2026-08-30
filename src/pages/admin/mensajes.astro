@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { supabase } from '../../lib/supabase.js';
+const { data: messages } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
+---
+<BaseLayout title="Mensajes de Contacto">
+  <div class="min-h-screen bg-solaris-gray">
+    <header class="bg-white border-b border-solaris-border shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+        <div class="flex items-center gap-4">
+          <a href="/admin/dashboard" class="text-solaris-dark font-bold text-xl">SOLARIS</a>
+          <span class="text-xs bg-solaris-primary/10 text-solaris-primary px-2 py-1 rounded-pill font-semibold">ADMIN</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="/admin/dashboard" class="text-sm text-solaris-text hover:text-solaris-primary">← Dashboard</a>
+          <button id="logout-btn" class="text-sm text-red-500 hover:text-red-700 font-medium">Cerrar Sesión</button>
+        </div>
+      </div>
+    </header>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-solaris-dark mb-8">📧 Mensajes de Contacto</h1>
+      {(!messages || messages.length === 0) ? (
+        <div class="card p-12 text-center">
+          <p class="text-solaris-text text-lg">No hay mensajes todavía.</p>
+          <p class="text-solaris-text text-sm mt-2">Los mensajes del formulario de contacto aparecerán aquí.</p>
+        </div>
+      ) : (
+        <div class="space-y-4">
+          {messages.map((m) => (
+            <div class={`card p-6 ${!m.is_read ? 'border-l-4 border-solaris-primary bg-blue-50/30' : ''}`}>
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <h3 class="font-bold text-solaris-dark text-lg">{m.name}</h3>
+                  <p class="text-sm text-solaris-text">{m.email} {m.phone ? `• ${m.phone}` : ''}</p>
+                </div>
+                <span class="text-xs text-solaris-text">{new Date(m.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              <p class="text-solaris-dark leading-relaxed">{m.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script is:inline>
+    const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+    sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
+    document.getElementById('logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
+  </script>
+</BaseLayout>

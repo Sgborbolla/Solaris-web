@@ -1,0 +1,17 @@
+---
+interface Props {
+  name: string;
+  icon: string;
+  colorClass: string;
+  href: string;
+}
+const { name, icon, colorClass, href } = Astro.props;
+---
+<a href={href} class="card p-6 text-center hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
+  <div class={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center transition-colors ${colorClass}`}>
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icon} />
+    </svg>
+  </div>
+  <h3 class="font-semibold text-solaris-dark group-hover:text-solaris-primary transition-colors">{name}</h3>
+</a>

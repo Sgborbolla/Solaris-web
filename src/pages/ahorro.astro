@@ -1,0 +1,97 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+---
+<PublicLayout title="Calculadora de Ahorro" description="Calcula cuánto puedes ahorrar" isHome={false} activeTab="ahorro">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Calculadora de Ahorro Solar</h1>
+      <p class="text-xl text-solaris-text max-w-2xl mx-auto">Descubre cuánto dinero puedes ahorrar al cambiar a energía solar.</p>
+    </div>
+    <div class="card p-8 md:p-10 shadow-xl">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="space-y-6">
+          <div>
+            <label for="bill" class="block text-sm font-semibold text-solaris-dark mb-2">¿Cuánto pagas de luz al mes?</label>
+            <div class="flex gap-2 mb-3">
+              <button type="button" id="btn-usd" class="currency-btn flex-1 py-2 px-4 rounded-card border-2 border-solaris-primary bg-solaris-primary text-white font-semibold transition-all">USD ($)</button>
+              <button type="button" id="btn-mn" class="currency-btn flex-1 py-2 px-4 rounded-card border-2 border-solaris-border bg-white text-solaris-text font-semibold transition-all">MN (CUP)</button>
+            </div>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-solaris-text" id="currency-symbol">$</span>
+              <input type="number" id="bill" min="0" value="100" class="w-full pl-10 pr-4 py-4 text-2xl font-bold border-2 border-solaris-border rounded-card focus:ring-2 focus:ring-solaris-primary focus:border-transparent outline-none transition-all" />
+            </div>
+            <p class="text-xs text-solaris-text mt-2" id="currency-hint">Ingresa el promedio de tu factura mensual en dólares (USD).</p>
+          </div>
+          <div class="bg-solaris-gray rounded-card p-4">
+            <h3 class="font-bold text-solaris-dark mb-2">💡 Supuestos del cálculo:</h3>
+            <ul class="text-sm text-solaris-text space-y-1">
+              <li>• Ahorro promedio del 90% en tu factura.</li>
+              <li>• Aumento anual de tarifas eléctricas del 5%.</li>
+              <li>• Vida útil del sistema: 25 años.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-card p-6">
+            <p class="text-sm font-semibold text-green-700 mb-1">Ahorro Mensual Estimado</p>
+            <p class="text-4xl font-bold text-green-600" id="monthly-savings">$90 USD</p>
+          </div>
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-card p-6">
+            <p class="text-sm font-semibold text-blue-700 mb-1">Ahorro Anual Estimado</p>
+            <p class="text-3xl font-bold text-blue-600" id="annual-savings">$1,080 USD</p>
+          </div>
+          <div class="bg-gradient-to-br from-solaris-primary/10 to-solaris-accent/10 border border-solaris-primary/20 rounded-card p-6">
+            <p class="text-sm font-semibold text-solaris-primary mb-1">Ahorro Total en 25 Años</p>
+            <p class="text-3xl font-bold text-solaris-primary" id="total-savings">$27,000 USD</p>
+            <p class="text-xs text-solaris-text mt-1">*Considerando el aumento anual de tarifas.</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-10 text-center">
+        <p class="text-solaris-dark font-semibold mb-4">¿Quieres una visita técnica para evaluar tu proyecto?</p>
+        <a href="/contacto" class="btn-primary inline-flex text-lg px-8 py-4">Agendar Visita Técnica →</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    const billInput = document.getElementById('bill');
+    const monthlySavings = document.getElementById('monthly-savings');
+    const annualSavings = document.getElementById('annual-savings');
+    const totalSavings = document.getElementById('total-savings');
+    const btnUsd = document.getElementById('btn-usd');
+    const btnMn = document.getElementById('btn-mn');
+    const currencyHint = document.getElementById('currency-hint');
+    let currentCurrency = 'USD';
+    function formatCurrency(num) {
+      const formatted = num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+      return currentCurrency === 'USD' ? `$$${formatted} USD` : `$$${formatted} MN`;
+    }
+    function calculate() {
+      const bill = parseFloat(billInput.value) || 0;
+      const monthlySave = bill * 0.90;
+      const annualSave = monthlySave * 12;
+      let totalSave = 0; let currentAnnual = annualSave;
+      for (let i = 0; i < 25; i++) { totalSave += currentAnnual; currentAnnual *= 1.05; }
+      monthlySavings.textContent = formatCurrency(monthlySave);
+      annualSavings.textContent = formatCurrency(annualSave);
+      totalSavings.textContent = formatCurrency(totalSave);
+    }
+    function setCurrency(currency) {
+      currentCurrency = currency;
+      if (currency === 'USD') {
+        btnUsd.className = 'currency-btn flex-1 py-2 px-4 rounded-card border-2 border-solaris-primary bg-solaris-primary text-white font-semibold transition-all';
+        btnMn.className = 'currency-btn flex-1 py-2 px-4 rounded-card border-2 border-solaris-border bg-white text-solaris-text font-semibold transition-all';
+        currencyHint.textContent = 'Ingresa el promedio de tu factura mensual en dólares (USD).'; billInput.value = '100';
+      } else {
+        btnMn.className = 'currency-btn flex-1 py-2 px-4 rounded-card border-2 border-solaris-primary bg-solaris-primary text-white font-semibold transition-all';
+        btnUsd.className = 'currency-btn flex-1 py-2 px-4 rounded-card border-2 border-solaris-border bg-white text-solaris-text font-semibold transition-all';
+        currencyHint.textContent = 'Ingresa el promedio de tu factura mensual en Moneda Nacional (CUP).'; billInput.value = '1000';
+      }
+      calculate();
+    }
+    btnUsd.addEventListener('click', () => setCurrency('USD'));
+    btnMn.addEventListener('click', () => setCurrency('MN'));
+    billInput.addEventListener('input', calculate);
+    calculate();
+  </script>
+</PublicLayout>

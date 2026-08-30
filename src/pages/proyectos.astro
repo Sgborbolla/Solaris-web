@@ -1,0 +1,30 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { supabase } from '../lib/supabase.js';
+const { data: projects } = await supabase.from('projects').select('*').eq('is_active', true).order('created_at', { ascending: false });
+---
+<PublicLayout title="Proyectos" description="Nuestros trabajos realizados" isHome={false}>
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Proyectos Realizados</h1>
+      <p class="text-xl text-solaris-text max-w-3xl mx-auto">Cada instalación es una historia de ahorro y sostenibilidad.</p>
+    </div>
+    {(!projects || projects.length === 0) ? (
+      <div class="card p-12 text-center"><p class="text-solaris-text text-lg">Próximamente publicaremos nuestros proyectos.</p></div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((p) => (
+          <div class="card overflow-hidden group hover:shadow-xl transition-all">
+            <img src={p.image_url || 'https://via.placeholder.com/800x450'} alt={p.title} class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
+            <div class="p-6">
+              <span class="text-xs font-bold text-solaris-primary uppercase tracking-wider">{p.category}</span>
+              <h3 class="text-xl font-bold text-solaris-dark mt-2 mb-2">{p.title}</h3>
+              <p class="text-solaris-text text-sm mb-4">{p.description}</p>
+              {p.location && <div class="flex items-center gap-2 text-sm text-solaris-text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg><span>{p.location}</span></div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</PublicLayout>

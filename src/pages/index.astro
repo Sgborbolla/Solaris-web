@@ -1,0 +1,104 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { supabase } from '../lib/supabase.js';
+
+const { data: heroData } = await supabase.from('hero_content').select('*').order('id', { ascending: false }).limit(1);
+const hero = heroData?.[0] || null;
+const { data: gallery } = await supabase.from('gallery_images').select('*').eq('is_active', true).order('id', { ascending: true }).limit(2);
+const { data: settings } = await supabase.from('site_settings').select('*');
+const settingsObj = {};
+settings?.forEach(s => { settingsObj[s.key] = s.value; });
+
+function getYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+  return match ? match[1] : null;
+}
+---
+<PublicLayout title={hero?.title || 'SOLARIS'} description={hero?.subtitle || ''} activeTab="inicio" isHome={true}>
+  <section class="relative rounded-card overflow-hidden shadow-lg mb-8 bg-solaris-dark">
+    <div class="absolute inset-0 bg-gradient-to-t from-solaris-dark/90 via-solaris-dark/50 to-transparent z-10"></div>
+    <img src={hero?.background_image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80'} alt="Hero" class="w-full h-80 md:h-[28rem] object-cover" />
+    {hero?.logo_url && <div class="absolute top-6 left-1/2 -translate-x-1/2 z-30"><img src={hero.logo_url} alt="Logo" class="h-20 md:h-28 w-auto object-contain drop-shadow-2xl bg-white/90 p-3 rounded-card" /></div>}
+    <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20 text-center">
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-3 tracking-tight drop-shadow-lg">{hero?.title || 'ENERGÍA PARA TU FUTURO'}</h1>
+      <p class="text-solaris-gray text-base md:text-lg mb-6 max-w-xl mx-auto drop-shadow">{hero?.subtitle || ''}</p>
+      <a href={hero?.cta_link || '/productos'} class="btn-primary inline-flex">{hero?.cta_text || 'VER PRODUCTOS'}</a>
+    </div>
+  </section>
+  <section class="py-8">
+    <h2 class="text-2xl font-semibold text-solaris-dark mb-6 text-center">Nuestras Soluciones</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="/productos" class="card p-6 text-center hover:shadow-md transition-all"><div class="w-16 h-16 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center"><svg class="w-8 h-8 text-solaris-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><h3 class="font-semibold text-solaris-dark">Paneles</h3></a>
+      <a href="/productos" class="card p-6 text-center hover:shadow-md transition-all"><div class="w-16 h-16 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center"><svg class="w-8 h-8 text-solaris-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><h3 class="font-semibold text-solaris-dark">Inversores</h3></a>
+      <a href="/productos" class="card p-6 text-center hover:shadow-md transition-all"><div class="w-16 h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center"><svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div><h3 class="font-semibold text-solaris-dark">Baterías</h3></a>
+      <a href="/productos" class="card p-6 text-center hover:shadow-md transition-all"><div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center"><svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><h3 class="font-semibold text-solaris-dark">Accesorios</h3></a>
+    </div>
+  </section>
+  {hero?.video_url && (
+  <section class="py-12">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl md:text-4xl font-bold text-solaris-dark mb-3">Descubre el Poder del Sol</h2>
+      <p class="text-solaris-text text-lg max-w-2xl mx-auto">Mira cómo la energía solar está transformando hogares y empresas.</p>
+    </div>
+    <div class="max-w-4xl mx-auto">
+      <div class="relative aspect-video rounded-card overflow-hidden shadow-xl">
+        {hero.video_url.includes('youtube.com') || hero.video_url.includes('youtu.be') ? <iframe src={`https://www.youtube.com/embed/${getYouTubeId(hero.video_url)}`} class="w-full h-full" frameborder="0" allowfullscreen></iframe> : <video controls class="w-full h-full" src={hero.video_url}></video>}
+      </div>
+    </div>
+  </section>
+  )}
+  <section class="py-12 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-solaris-dark mb-4">Beneficios de la Energía Solar</h2>
+        <p class="text-solaris-text text-lg max-w-2xl mx-auto">Descubre por qué miles de hogares y empresas ya están ahorrando.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="space-y-6">
+          <div class="flex gap-4"><div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center"><svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div><h3 class="text-xl font-semibold text-solaris-dark mb-2">Ahorro Significativo</h3><p class="text-solaris-text">Reduce tu factura de electricidad hasta un 90%.</p></div></div>
+          <div class="flex gap-4"><div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center"><svg class="w-6 h-6 text-solaris-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div><h3 class="text-xl font-semibold text-solaris-dark mb-2">Energía Limpia</h3><p class="text-solaris-text">Contribuye a un planeta más verde.</p></div></div>
+          <div class="flex gap-4"><div class="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center"><svg class="w-6 h-6 text-solaris-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></div><div><h3 class="text-xl font-semibold text-solaris-dark mb-2">Valor de Propiedad</h3><p class="text-solaris-text">Los hogares con energía solar aumentan su valor.</p></div></div>
+        </div>
+        <div class="space-y-6">
+          <div class="flex gap-4"><div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg></div><div><h3 class="text-xl font-semibold text-solaris-dark mb-2">Independencia Energética</h3><p class="text-solaris-text">Genera tu propia energía.</p></div></div>
+          <div class="flex gap-4"><div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center"><svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div><h3 class="text-xl font-semibold text-solaris-dark mb-2">Bajo Mantenimiento</h3><p class="text-solaris-text">Mínimo mantenimiento y garantía de 25 años.</p></div></div>
+          <div class="flex gap-4"><div class="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center"><svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg></div><div><h3 class="text-xl font-semibold text-solaris-dark mb-2">Comunidad Sostenible</h3><p class="text-solaris-text">Únete a miles de hogares con energía limpia.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {gallery && gallery.length > 0 && (
+  <section class="py-12">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-bold text-solaris-dark mb-3">Nuestras Instalaciones</h2>
+        <p class="text-solaris-text text-lg max-w-2xl mx-auto">Proyectos reales que transforman vidas.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {gallery.slice(0, 2).map((img) => (
+          <div class="relative aspect-[4/3] rounded-card overflow-hidden shadow-lg group">
+            <img src={img.image_url} alt={img.title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+              <h3 class="text-white text-xl font-bold mb-2">{img.title}</h3>
+              {img.description && <p class="text-solaris-gray text-sm">{img.description}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+  )}
+  <section class="py-12">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="card p-8 md:p-12 text-center bg-gradient-to-br from-solaris-primary to-solaris-accent text-white">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">¿Listo para empezar a ahorrar?</h2>
+        <p class="text-lg mb-6 opacity-90">Contáctanos hoy y recibe una evaluación profesional de tu proyecto solar.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/contacto" class="bg-white text-solaris-primary px-8 py-3 rounded-card font-bold hover:bg-solaris-gray transition-colors">Solicitar Cotización</a>
+          <a href={`https://wa.me/${settingsObj.whatsapp_number || '1234567890'}`} target="_blank" class="bg-green-500 text-white px-8 py-3 rounded-card font-bold hover:bg-green-600 transition-colors">WhatsApp Directo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</PublicLayout>

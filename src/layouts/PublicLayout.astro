@@ -1,0 +1,54 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BottomNav from '../components/BottomNav.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  activeTab?: string;
+  isHome?: boolean;
+}
+const { title, description = '', activeTab = 'inicio', isHome = false } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title} | SOLARIS</title>
+  <script is:inline src="https://cdn.tailwindcss.com"></script>
+  <script is:inline>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'solaris-primary': '#2563eb',
+            'solaris-accent': '#f59e0b',
+            'solaris-dark': '#0f172a',
+            'solaris-text': '#64748b',
+            'solaris-gray': '#f1f5f9',
+            'solaris-border': '#e2e8f0',
+          },
+          borderRadius: { 'card': '16px', 'pill': '9999px' }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .btn-primary { background: #2563eb; color: white; padding: 12px 24px; border-radius: 16px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .btn-primary:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body class="bg-solaris-gray">
+  <Header activeTab={activeTab} />
+  <main class={isHome ? 'max-w-6xl mx-auto px-4 py-8' : ''}>
+    <slot />
+  </main>
+  <Footer />
+  <BottomNav activeTab={activeTab} />
+</body>
+</html>

@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-solaris-light text-solaris-dark font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-solaris-dark;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-solaris-primary text-white font-semibold px-6 py-3 rounded-pill shadow-md hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-solaris-accent text-solaris-dark font-semibold px-6 py-3 rounded-pill shadow-md hover:bg-amber-500 transition-all duration-200 flex items-center justify-center gap-2;
+  }
+
+  .card {
+    @apply bg-white rounded-card shadow-sm border border-solaris-border overflow-hidden;
+  }
+}

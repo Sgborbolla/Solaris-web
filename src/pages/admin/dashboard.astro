@@ -1,0 +1,129 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase } from '../../lib/supabase.js';
+
+const { count: totalProducts } = await supabase.from('products').select('*', { count: 'exact', head: true });
+const { count: totalMessages } = await supabase.from('messages').select('*', { count: 'exact', head: true });
+const { count: unreadMessages } = await supabase.from('messages').select('*', { count: 'exact', head: true }).eq('is_read', false);
+const { count: totalProjects } = await supabase.from('projects').select('*', { count: 'exact', head: true });
+const { count: totalFAQ } = await supabase.from('faq_questions').select('*', { count: 'exact', head: true });
+---
+<AdminLayout title="Dashboard" activeTab="dashboard">
+  <header class="bg-white border-b border-solaris-border shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <div class="flex items-center gap-4">
+        <span class="text-solaris-dark font-bold text-xl">SOLARIS</span>
+        <span class="text-xs bg-solaris-primary/10 text-solaris-primary px-2 py-1 rounded-pill font-semibold">ADMIN</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-sm text-solaris-text hover:text-solaris-primary">Ver Sitio</a>
+        <button id="logout-btn" class="text-sm text-red-500 hover:text-red-700 font-medium">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-solaris-dark mb-8">📊 Dashboard</h1>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div class="card p-5">
+        <p class="text-solaris-text text-xs">Productos</p>
+        <p class="text-3xl font-bold text-solaris-primary mt-1">{totalProducts || 0}</p>
+      </div>
+      <div class="card p-5">
+        <p class="text-solaris-text text-xs">Mensajes</p>
+        <p class="text-3xl font-bold text-purple-600 mt-1">{totalMessages || 0}</p>
+        {unreadMessages > 0 && <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-pill">{unreadMessages} nuevos</span>}
+      </div>
+      <div class="card p-5">
+        <p class="text-solaris-text text-xs">Proyectos</p>
+        <p class="text-3xl font-bold text-green-600 mt-1">{totalProjects || 0}</p>
+      </div>
+      <div class="card p-5">
+        <p class="text-solaris-text text-xs">FAQ</p>
+        <p class="text-3xl font-bold text-amber-600 mt-1">{totalFAQ || 0}</p>
+      </div>
+      <div class="card p-5">
+        <p class="text-solaris-text text-xs">Galería</p>
+        <p class="text-3xl font-bold text-pink-600 mt-1">🖼️</p>
+      </div>
+    </div>
+
+    <h2 class="text-xl font-bold text-solaris-dark mb-4">Accesos Rápidos</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a href="/admin/inicio" class="card p-6 hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-solaris-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-solaris-dark">Editar Inicio</h3>
+            <p class="text-xs text-solaris-text">Hero, video, galería, logo</p>
+          </div>
+        </div>
+      </a>
+      <a href="/admin/productos" class="card p-6 hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-solaris-dark">Productos</h3>
+            <p class="text-xs text-solaris-text">Agregar, editar, eliminar</p>
+          </div>
+        </div>
+      </a>
+      <a href="/admin/proyectos" class="card p-6 hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-solaris-dark">Proyectos</h3>
+            <p class="text-xs text-solaris-text">Casos de éxito</p>
+          </div>
+        </div>
+      </a>
+      <a href="/admin/faq" class="card p-6 hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-solaris-dark">FAQ</h3>
+            <p class="text-xs text-solaris-text">Preguntas frecuentes</p>
+          </div>
+        </div>
+      </a>
+      <a href="/admin/mensajes" class="card p-6 hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-solaris-dark">Mensajes</h3>
+            <p class="text-xs text-solaris-text">Contacto recibido</p>
+          </div>
+        </div>
+      </a>
+      <a href="/admin/configuracion" class="card p-6 hover:shadow-lg transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-solaris-dark">Configuración</h3>
+            <p class="text-xs text-solaris-text">Redes, contacto, mapa</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script is:inline>
+    const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+    sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
+    document.getElementById('logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
+  </script>
+</AdminLayout>

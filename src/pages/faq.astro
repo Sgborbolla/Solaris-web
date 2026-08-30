@@ -1,0 +1,33 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { supabase } from '../lib/supabase.js';
+const { data: faqs } = await supabase.from('faq_questions').select('*').eq('is_active', true).order('order_num');
+---
+<PublicLayout title="Preguntas Frecuentes" description="Resolvemos tus dudas" isHome={false}>
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Preguntas Frecuentes</h1>
+      <p class="text-xl text-solaris-text">Aquí encontrarás las respuestas a las dudas más comunes.</p>
+    </div>
+    {(!faqs || faqs.length === 0) ? (
+      <div class="card p-12 text-center"><p class="text-solaris-text text-lg">No hay preguntas disponibles.</p></div>
+    ) : (
+      <div class="space-y-4">
+        {faqs.map((f) => (
+          <details class="card p-6 group cursor-pointer [&_summary::-webkit-details-marker]:hidden">
+            <summary class="flex justify-between items-center font-semibold text-solaris-dark text-lg">
+              {f.question}
+              <svg class="w-6 h-6 text-solaris-primary transform group-open:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+            </summary>
+            <p class="text-solaris-text mt-4 leading-relaxed">{f.answer}</p>
+          </details>
+        ))}
+      </div>
+    )}
+    <div class="mt-12 text-center card p-8 bg-gradient-to-br from-solaris-primary/10 to-solaris-accent/10">
+      <h3 class="text-2xl font-bold text-solaris-dark mb-3">¿Tienes más preguntas?</h3>
+      <p class="text-solaris-text mb-6">Estamos aquí para ayudarte.</p>
+      <a href="/contacto" class="btn-primary inline-flex">Contactar ahora</a>
+    </div>
+  </div>
+</PublicLayout>

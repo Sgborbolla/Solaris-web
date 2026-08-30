@@ -1,0 +1,12 @@
+---
+const url = new URL(Astro.request.url);
+const currentLang = url.searchParams.get('lang') || 'es';
+const currentPath = url.pathname;
+
+const esClass = currentLang === 'es' ? 'bg-solaris-primary text-white' : 'bg-solaris-gray text-solaris-dark hover:bg-solaris-border';
+const enClass = currentLang === 'en' ? 'bg-solaris-primary text-white' : 'bg-solaris-gray text-solaris-dark hover:bg-solaris-border';
+---
+<div class="flex items-center gap-1">
+  <a href={`${currentPath}?lang=es`} class={`px-3 py-1.5 rounded text-sm font-bold transition-all ${esClass}`} onclick="document.cookie='lang=es;path=/;max-age=31536000'">ES</a>
+  <a href={`${currentPath}?lang=en`} class={`px-3 py-1.5 rounded text-sm font-bold transition-all ${enClass}`} onclick="document.cookie='lang=en;path=/;max-age=31536000'">EN</a>
+</div>

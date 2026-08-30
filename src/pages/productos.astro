@@ -1,0 +1,66 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+
+const images = [
+  'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
+  'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=400',
+  'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=400',
+  'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=400'
+];
+const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
+const names = ['Panel Monocristalino 450W', 'Inversor Híbrido 5kW', 'Batería Litio 48V', 'Cable Solar 10mm'];
+
+const products = Array.from({ length: 20 }, (_, i) => ({
+  id: i + 1,
+  title: `${names[i % 4]} - Modelo ${i+1}`,
+  category: categories[i % 4],
+  image: images[i % 4]
+}));
+---
+<PublicLayout title="Productos" description="Catálogo de productos solares" isHome={false} activeTab="productos">
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Nuestros Productos</h1>
+      <p class="text-xl text-solaris-text">Soluciones de alta calidad para tu proyecto solar.</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-16">
+      {products.map((p) => (
+        <div class="card overflow-hidden group hover:shadow-lg transition-all">
+          <div class="aspect-square overflow-hidden bg-solaris-gray">
+            <img src={p.image} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          </div>
+          <div class="p-3">
+            <span class="text-[10px] font-bold text-solaris-primary uppercase tracking-wider">{p.category}</span>
+            <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">{p.title}</h3>
+            <a href={`/productos/${p.id}`} class="block w-full mt-3 py-2 bg-solaris-dark text-white text-xs font-semibold rounded-card hover:bg-solaris-primary transition-colors text-center">
+              Ver Detalles
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="card p-8 md:p-10 bg-white">
+      <h2 class="text-2xl md:text-3xl font-bold text-solaris-dark mb-6 text-center">Detalles y Especificaciones Técnicas</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-solaris-text">
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Paneles Solares</h3>
+          <p class="text-sm">Tecnología monocristalina de alta eficiencia. Garantía de 25 años de rendimiento. Resistencia a granizo y vientos fuertes.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Inversores</h3>
+          <p class="text-sm">Inversores híbridos y de red con monitoreo WiFi en tiempo real. Eficiencia superior al 98% y protección IP65.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Baterías</h3>
+          <p class="text-sm">Baterías de litio LiFePO4 de ciclo profundo. Más de 6000 ciclos de vida útil y gestión inteligente BMS integrada.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Accesorios</h3>
+          <p class="text-sm">Cables solares certificados, conectores MC4, estructuras de aluminio anodizado y protecciones eléctricas completas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</PublicLayout>

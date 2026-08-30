@@ -1,0 +1,153 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+
+// Obtener el ID de la URL (?id=1)
+const url = new URL(Astro.request.url);
+const productId = url.searchParams.get('id');
+
+// Datos de ejemplo (esto vendrá de Supabase al final)
+const products = [
+  {
+    id: '1',
+    name: 'Panel Solar Monocristalino 550W',
+    category: 'Paneles',
+    price: 185.00,
+    description: 'Panel solar de alta eficiencia con tecnología monocristalina PERC. Ideal para instalaciones residenciales y comerciales. Marco de aluminio reforzado y vidrio templado antirreflectante que garantiza máxima durabilidad y rendimiento en cualquier condición climática.',
+    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80',
+    specs: [
+      { label: 'Potencia', value: '550 W' },
+      { label: 'Eficiencia', value: '21.5%' },
+      { label: 'Garantía', value: '25 años' },
+      { label: 'Peso', value: '28.6 kg' },
+      { label: 'Dimensiones', value: '2278 x 1134 x 35 mm' },
+      { label: 'Celdas', value: '144 (half-cut)' }
+    ]
+  },
+  {
+    id: '2',
+    name: 'Inversor Híbrido 5kW',
+    category: 'Inversores',
+    price: 850.00,
+    description: 'Inversor híbrido de onda sinusoidal pura con controlador de carga MPPT integrado. Permite conectar baterías para respaldo energético y trabajar en conjunto con la red eléctrica, optimizando el consumo y reduciendo costos.',
+    image: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=800&q=80',
+    specs: [
+      { label: 'Potencia', value: '5000 W' },
+      { label: 'Voltaje', value: '48 V' },
+      { label: 'Eficiencia', value: '97.6%' },
+      { label: 'Garantía', value: '5 años' },
+      { label: 'Protecciones', value: 'IP65' },
+      { label: 'Monitoreo', value: 'WiFi incluido' }
+    ]
+  }
+];
+
+// Buscar el producto por ID
+const product = products.find(p => p.id === productId) || products[0];
+---
+
+<PublicLayout title={product.name} description={product.description} activeTab="productos">
+  
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Botón de regreso -->
+    <a href="/productos" class="inline-flex items-center gap-2 text-solaris-text hover:text-solaris-primary mb-6 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      <span class="font-medium">Volver al catálogo</span>
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      
+      <!-- Columna Izquierda: Imagen -->
+      <div class="space-y-4">
+        <div class="aspect-square rounded-card overflow-hidden bg-solaris-gray shadow-sm">
+          <img src={product.image} alt={product.name} class="w-full h-full object-cover" />
+        </div>
+        <!-- Miniaturas -->
+        <div class="grid grid-cols-4 gap-3">
+          <div class="aspect-square rounded-lg overflow-hidden border-2 border-solaris-primary cursor-pointer">
+            <img src={product.image} alt="Vista 1" class="w-full h-full object-cover" />
+          </div>
+          <div class="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-solaris-border cursor-pointer bg-solaris-gray">
+            <img src={product.image} alt="Vista 2" class="w-full h-full object-cover opacity-60" />
+          </div>
+          <div class="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-solaris-border cursor-pointer bg-solaris-gray">
+            <img src={product.image} alt="Vista 3" class="w-full h-full object-cover opacity-60" />
+          </div>
+          <div class="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-solaris-border cursor-pointer bg-solaris-gray flex items-center justify-center">
+            <span class="text-solaris-text text-sm font-medium">+2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Información -->
+      <div class="space-y-6">
+        <!-- Categoría y Título -->
+        <div>
+          <span class="inline-block bg-blue-100 text-solaris-primary text-xs font-bold px-3 py-1 rounded-pill mb-3">
+            {product.category}
+          </span>
+          <h1 class="text-3xl md:text-4xl font-bold text-solaris-dark leading-tight">
+            {product.name}
+          </h1>
+        </div>
+
+        <!-- Precio -->
+        <div class="flex items-baseline gap-2 pb-6 border-b border-solaris-border">
+          <span class="text-4xl font-extrabold text-solaris-primary">${product.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+          <span class="text-solaris-text text-sm">USD / unidad</span>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <h3 class="text-lg font-semibold text-solaris-dark mb-3">Descripción del producto</h3>
+          <p class="text-solaris-text leading-relaxed">{product.description}</p>
+        </div>
+
+        <!-- Especificaciones Técnicas -->
+        <div class="card p-6">
+          <h3 class="text-lg font-semibold text-solaris-dark mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-solaris-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            Especificaciones Técnicas
+          </h3>
+          <div class="space-y-0">
+            {product.specs.map((spec, index) => (
+              <div class={`flex justify-between items-center py-3 ${index !== product.specs.length - 1 ? 'border-b border-solaris-border' : ''}`}>
+                <span class="text-solaris-text">{spec.label}</span>
+                <span class="text-solaris-dark font-semibold">{spec.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex items-center gap-3 p-4 bg-green-50 rounded-card">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-green-700 font-semibold">En stock</p>
+              <p class="text-xs text-solaris-text">Entrega inmediata</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-card">
+            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-blue-700 font-semibold">Garantía oficial</p>
+              <p class="text-xs text-solaris-text">Certificado de calidad</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</PublicLayout>

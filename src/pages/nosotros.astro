@@ -1,0 +1,39 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+---
+<PublicLayout title="Sobre Nosotros" description="Conoce nuestra empresa" isHome={false}>
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Sobre Nosotros</h1>
+      <p class="text-xl text-solaris-text max-w-3xl mx-auto">Somos líderes en soluciones de energía solar, comprometidos con un futuro sostenible.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+      <div class="card p-8 text-center hover:shadow-lg transition-all">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-solaris-primary/10 flex items-center justify-center">
+          <svg class="w-8 h-8 text-solaris-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-3">Nuestra Misión</h3>
+        <p class="text-solaris-text">Proporcionar soluciones energéticas limpias, accesibles y de alta calidad para hogares y empresas.</p>
+      </div>
+      <div class="card p-8 text-center hover:shadow-lg transition-all">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-solaris-accent/10 flex items-center justify-center">
+          <svg class="w-8 h-8 text-solaris-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-3">Nuestra Visión</h3>
+        <p class="text-solaris-text">Ser la empresa referente en la transición energética, impulsando el cambio hacia un planeta más verde.</p>
+      </div>
+      <div class="card p-8 text-center hover:shadow-lg transition-all">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-3">Nuestros Valores</h3>
+        <p class="text-solaris-text">Compromiso, innovación, sostenibilidad y excelencia en cada proyecto que realizamos.</p>
+      </div>
+    </div>
+    <div class="card p-8 md:p-12 bg-gradient-to-br from-solaris-dark to-solaris-primary text-white text-center">
+      <h2 class="text-3xl font-bold mb-4">¿Listo para unirte al cambio?</h2>
+      <p class="text-lg opacity-90 mb-6 max-w-2xl mx-auto">Contáctanos hoy y descubre cómo podemos ayudarte a alcanzar la independencia energética.</p>
+      <a href="/contacto" class="bg-white text-solaris-primary px-8 py-3 rounded-card font-bold hover:bg-solaris-gray transition-colors inline-block">Contáctanos</a>
+    </div>
+  </div>
+</PublicLayout>

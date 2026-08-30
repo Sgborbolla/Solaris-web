@@ -1,0 +1,280 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { supabase } from '../../lib/supabase.js';
+
+const { data: settings } = await supabase.from('site_settings').select('*');
+const { data: social } = await supabase.from('social_links').select('*').order('order_num');
+const settingsObj = {};
+settings?.forEach(s => { settingsObj[s.key] = s.value; });
+---
+<AdminLayout title="Configuración" activeTab="configuracion">
+  <header class="bg-white border-b border-solaris-border shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <div class="flex items-center gap-4">
+        <a href="/admin/dashboard" class="text-solaris-dark font-bold text-xl">SOLARIS</a>
+        <span class="text-xs bg-indigo-500/10 text-indigo-600 px-2 py-1 rounded-pill font-semibold">CONFIG</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/admin/dashboard" class="text-sm text-solaris-text">← Dashboard</a>
+        <button id="logout-btn" class="text-sm text-red-500 font-medium">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
+    <h1 class="text-3xl font-bold text-solaris-dark mb-8">️ Configuración</h1>
+
+    <!-- CONTACTO -->
+    <div class="card p-6 mb-6">
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">📞 Información de Contacto</h2>
+      <form id="contact-form" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2">WhatsApp</label>
+            <input type="text" id="whatsapp" value={settingsObj.whatsapp_number || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">Teléfono</label>
+            <input type="text" id="phone" value={settingsObj.phone || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Correo Electrónico</label>
+          <input type="email" id="email" value={settingsObj.email || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">📍 Dirección</label>
+          <input type="text" id="address" value={settingsObj.address || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" placeholder="Ciudad, País" />
+        </div>
+        <button type="submit" class="btn-primary">💾 Guardar Contacto</button>
+      </form>
+    </div>
+
+    <!-- MAPA DE UBICACIÓN (CON EL CUADRO BONITO) -->
+    <div class="card p-6 mb-6">
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">️ Mapa de Ubicación</h2>
+      <p class="text-sm text-solaris-text mb-4">Sube una captura de pantalla de Google Maps. Esta imagen aparecerá grande en la página de Contacto.</p>
+      
+      <form id="map-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-2">Imagen del Mapa</label>
+          
+          {settingsObj.map_image ? (
+            <div class="relative w-full rounded-card overflow-hidden border-2 border-solaris-border group">
+              <img src={settingsObj.map_image} alt="Mapa actual" class="w-full h-64 object-cover" />
+              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <button type="button" id="replace-map-btn" class="bg-white text-solaris-dark px-3 py-2 rounded text-sm font-semibold">Reemplazar</button>
+                <button type="button" id="delete-map-btn" class="bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold">Eliminar</button>
+              </div>
+            </div>
+          ) : (
+            <label class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all">
+              <div class="flex flex-col items-center justify-center p-6">
+                <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p class="text-solaris-text font-semibold text-lg">Toca para subir el mapa</p>
+                <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
+              </div>
+              <input type="file" id="map-file" accept="image/*" class="hidden" />
+            </label>
+          )}
+
+          <!-- Preview y Progreso -->
+          <div id="map-preview-container" class="mt-3 hidden">
+            <img id="map-preview" src="" alt="Preview" class="w-full h-64 object-cover rounded-card border border-solaris-border" />
+            <button type="button" id="remove-map-preview" class="mt-2 text-sm text-red-500 hover:underline">Quitar imagen</button>
+          </div>
+
+          <div id="map-upload-progress" class="hidden mt-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-solaris-text">Subiendo...</span>
+              <span id="map-progress-percent" class="text-xs font-semibold text-solaris-primary">0%</span>
+            </div>
+            <div class="w-full bg-solaris-gray rounded-full h-2">
+              <div id="map-progress-bar" class="bg-solaris-primary h-2 rounded-full transition-all" style="width: 0%"></div>
+            </div>
+          </div>
+          <div id="map-upload-success" class="hidden mt-3 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-card text-sm">
+            ✅ Carga exitosa
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold mb-2">Descripción de la Ubicación</label>
+          <textarea id="map-desc" rows="3" class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary resize-none" placeholder="Visítanos en nuestras oficinas...">{settingsObj.map_description || ''}</textarea>
+        </div>
+        
+        <button type="submit" class="btn-primary">💾 Guardar Mapa</button>
+      </form>
+    </div>
+
+    <!-- REDES SOCIALES -->
+    <div class="card p-6 mb-6">
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🌐 Redes Sociales</h2>
+      <p class="text-sm text-solaris-text mb-4">Edita las URLs de tus redes sociales.</p>
+      
+      {(!social || social.length === 0) ? (
+        <div class="bg-yellow-50 border border-yellow-200 rounded-card p-4 text-center">
+          <p class="text-yellow-800 font-semibold">⚠️ No hay redes sociales configuradas</p>
+        </div>
+      ) : (
+        <form id="social-form" class="space-y-4">
+          {(social || []).map((s) => (
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center p-4 bg-solaris-gray rounded-card">
+              <div class="md:col-span-3">
+                <label class="block text-sm font-bold text-solaris-dark capitalize mb-1">{s.platform}</label>
+                <span class="text-xs text-solaris-text">{s.name}</span>
+              </div>
+              <div class="md:col-span-9">
+                <input 
+                  type="text" 
+                  data-id={s.id} 
+                  value={s.url} 
+                  class="social-url w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" 
+                  placeholder="https://facebook.com/tu-pagina"
+                />
+              </div>
+            </div>
+          ))}
+          <button type="submit" class="btn-primary">💾 Guardar Redes Sociales</button>
+        </form>
+      )}
+    </div>
+  </div>
+
+  <div id="toast" class="hidden fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-card shadow-lg z-50"></div>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script is:inline>
+    const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+    sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
+    document.getElementById('logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    async function updateSetting(key, value) {
+      await sb.from('site_settings').update({ value }).eq('key', key);
+    }
+
+    // CONTACTO
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await updateSetting('whatsapp_number', document.getElementById('whatsapp').value);
+      await updateSetting('phone', document.getElementById('phone').value);
+      await updateSetting('email', document.getElementById('email').value);
+      await updateSetting('address', document.getElementById('address').value);
+      showToast('✅ Contacto actualizado');
+    });
+
+    // MAPA (Lógica del cuadro bonito)
+    const mapFileInput = document.getElementById('map-file');
+    const mapPreviewContainer = document.getElementById('map-preview-container');
+    const mapPreview = document.getElementById('map-preview');
+    const mapProgress = document.getElementById('map-upload-progress');
+    const mapProgressBar = document.getElementById('map-progress-bar');
+    const mapProgressPercent = document.getElementById('map-progress-percent');
+    const mapSuccess = document.getElementById('map-upload-success');
+    let selectedMapFile = null;
+
+    // Seleccionar archivo
+    mapFileInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('❌ La imagen no debe superar los 5MB');
+        return;
+      }
+      selectedMapFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        mapPreview.src = e.target.result;
+        mapPreviewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Quitar preview
+    document.getElementById('remove-map-preview')?.addEventListener('click', () => {
+      selectedMapFile = null;
+      mapFileInput.value = '';
+      mapPreviewContainer.classList.add('hidden');
+    });
+
+    // Reemplazar imagen existente
+    document.getElementById('replace-map-btn')?.addEventListener('click', () => {
+      mapFileInput.click();
+    });
+
+    // Eliminar imagen existente
+    document.getElementById('delete-map-btn')?.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar el mapa actual?')) return;
+      await updateSetting('map_image', '');
+      showToast('✅ Mapa eliminado');
+      setTimeout(() => location.reload(), 1000);
+    });
+
+    // Guardar mapa
+    document.getElementById('map-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        if (selectedMapFile) {
+          mapProgress.classList.remove('hidden');
+          mapSuccess.classList.add('hidden');
+          mapProgressBar.style.width = '30%';
+          mapProgressPercent.textContent = '30%';
+
+          const fileName = `${Date.now()}_${selectedMapFile.name.replace(/\s/g, '_')}`;
+          const { error } = await sb.storage.from('maps').upload(fileName, selectedMapFile);
+          if (error) throw error;
+
+          const { data } = sb.storage.from('maps').getPublicUrl(fileName);
+          await updateSetting('map_image', data.publicUrl);
+
+          mapProgressBar.style.width = '100%';
+          mapProgressPercent.textContent = '100%';
+        }
+        
+        await updateSetting('map_description', document.getElementById('map-desc').value);
+        
+        mapProgress.classList.add('hidden');
+        mapSuccess.classList.remove('hidden');
+        showToast('✅ Mapa actualizado');
+        setTimeout(() => location.reload(), 1500);
+      } catch (err) {
+        showToast('❌ ' + err.message);
+        mapProgress.classList.add('hidden');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+
+    // REDES
+    document.getElementById('social-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inputs = document.querySelectorAll('.social-url');
+      let successCount = 0;
+      
+      for (const input of inputs) {
+        const { error } = await sb.from('social_links').update({ url: input.value }).eq('id', input.dataset.id);
+        if (!error) successCount++;
+      }
+      
+      if (successCount === inputs.length) {
+        showToast('✅ Redes sociales actualizadas');
+      } else {
+        showToast('❌ Error al actualizar algunas redes');
+      }
+    });
+  </script>
+</AdminLayout>

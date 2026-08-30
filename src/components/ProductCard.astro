@@ -1,0 +1,35 @@
+---
+interface Props {
+  id: string | number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+}
+const { id, name, description, price, image, category } = Astro.props;
+---
+<article class="card flex flex-col h-full hover:shadow-md transition-all duration-300">
+  <div class="relative aspect-[4/3] overflow-hidden bg-solaris-gray">
+    <img 
+      src={image || 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=400&q=80'} 
+      alt={name} 
+      class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+    />
+    <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-solaris-dark text-xs font-semibold px-3 py-1 rounded-pill shadow-sm">
+      {category}
+    </span>
+  </div>
+  
+  <div class="p-4 flex flex-col flex-grow">
+    <h3 class="font-bold text-solaris-dark text-lg mb-1 line-clamp-1">{name}</h3>
+    <p class="text-solaris-text text-sm mb-4 line-clamp-2 flex-grow">{description}</p>
+    
+    <div class="flex items-center justify-between mt-auto pt-3 border-t border-solaris-border">
+      <span class="text-xl font-bold text-solaris-primary">${price.toLocaleString()}</span>
+      <a href={`/producto?id=${id}`} class="btn-secondary text-sm px-4 py-2">
+        Ver Detalle
+      </a>
+    </div>
+  </div>
+</article>
