@@ -10,7 +10,6 @@ import PublicLayout from '../layouts/PublicLayout.astro';
 >
   <div class="max-w-6xl mx-auto px-4 py-8 md:py-12">
 
-    <!-- Encabezado -->
     <div class="text-center mb-8 md:mb-10">
       <h1 class="text-3xl md:text-5xl font-bold text-solaris-dark mb-3 md:mb-4">
         Nuestros Productos
@@ -21,72 +20,64 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       </p>
     </div>
 
-    <!-- Estado de carga -->
     <div id="products-loading" class="text-center py-12">
       <div class="inline-block w-8 h-8 border-4 border-solaris-border border-t-solaris-primary rounded-full animate-spin"></div>
       <p class="mt-4 text-solaris-text">Cargando productos...</p>
     </div>
 
-    <!-- Catálogo -->
     <div
       id="products-grid"
       class="hidden grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
-    >
-    </div>
+    ></div>
 
-    <!-- Sin productos -->
     <div id="products-empty" class="hidden text-center py-12">
       <p class="text-lg text-solaris-text">
         No hay productos disponibles.
       </p>
     </div>
 
-    <!-- Error -->
     <div id="products-error" class="hidden text-center py-12">
       <p class="text-lg text-red-500">
         No se pudieron cargar los productos.
       </p>
-      <button
-        id="retry-btn"
-        class="mt-4 btn-primary"
-      >
+
+      <button id="retry-btn" class="mt-4 btn-primary">
         Intentar nuevamente
       </button>
     </div>
 
-    <!-- PAGINACIÓN -->
     <div
       id="pagination"
       class="hidden flex items-center justify-center gap-3 mt-10 md:mt-12"
     >
 
-      <!-- Anterior -->
       <button
         id="previous-btn"
+        type="button"
         class="hidden px-3 md:px-4 py-2 text-sm font-semibold text-solaris-dark hover:text-solaris-primary transition-colors"
       >
         ← Anterior
       </button>
 
-      <!-- Página 1 -->
       <button
         id="page-1"
+        type="button"
         class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all"
       >
         1
       </button>
 
-      <!-- Página 2 -->
       <button
         id="page-2"
+        type="button"
         class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all"
       >
         2
       </button>
 
-      <!-- Siguiente -->
       <button
         id="next-btn"
+        type="button"
         class="hidden px-3 md:px-4 py-2 text-sm font-semibold text-solaris-dark hover:text-solaris-primary transition-colors"
       >
         Siguiente →
@@ -103,9 +94,11 @@ import PublicLayout from '../layouts/PublicLayout.astro';
   const SUPABASE_URL = 'https://djyysffxpbvbfkcmrhta.supabase.co';
 
   const SUPABASE_ANON_KEY =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6MTc4ODAyNzkxNiwiaWF0IjoxNzg4MDI3OTE2LCJleHAiOjIxMDM2MDM5MTZ9.Vrtk3z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo';
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cGFiYXNlIiwicmVmIjoiZGp5eXNlZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk3z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo';
 
   const PRODUCTS_PER_PAGE = 14;
+  const TOTAL_PAGES = 2;
+  const MAX_PRODUCTS = 28;
 
   let allProducts = [];
   let currentPage = 1;
@@ -139,36 +132,32 @@ import PublicLayout from '../layouts/PublicLayout.astro';
 
     const pageProducts = allProducts.slice(start, end);
 
-    grid.innerHTML = pageProducts.map((p) => {
-
+    grid.innerHTML = pageProducts.map((product) => {
       const image =
-        p.image ||
+        product.image ||
         'https://via.placeholder.com/600x600?text=Solaris';
 
       const name =
-        p.name ||
+        product.name ||
         'Producto Solaris';
 
       const category =
-        p.category ||
+        product.category ||
         'Solar';
 
       return `
         <a
-          href="/productos/${p.id}"
+          href="/productos/${encodeURIComponent(product.id)}"
           class="card overflow-hidden group hover:shadow-xl transition-all duration-300 block"
           aria-label="Ver detalles de ${escapeHtml(name)}"
         >
-
           <div class="aspect-square overflow-hidden bg-solaris-gray">
-
             <img
               src="${escapeHtml(image)}"
               alt="${escapeHtml(name)}"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
             />
-
           </div>
 
           <div class="p-3 md:p-4">
@@ -192,28 +181,18 @@ import PublicLayout from '../layouts/PublicLayout.astro';
             </div>
 
           </div>
-
         </a>
       `;
     }).join('');
 
     updatePagination();
 
-    grid.classList.remove('hidden');
     loading.classList.add('hidden');
+    grid.classList.remove('hidden');
     pagination.classList.remove('hidden');
   }
 
   function updatePagination() {
-
-    // Página activa AZUL
-    const activeClasses =
-      'bg-solaris-primary text-white shadow-md';
-
-    // Página inactiva AMARILLA
-    const inactiveClasses =
-      'bg-solaris-accent text-solaris-dark';
-
     page1.className =
       'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all';
 
@@ -221,7 +200,6 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all';
 
     if (currentPage === 1) {
-
       page1.classList.add(
         'bg-solaris-primary',
         'text-white',
@@ -237,7 +215,6 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       nextBtn.classList.remove('hidden');
 
     } else {
-
       page1.classList.add(
         'bg-solaris-accent',
         'text-solaris-dark'
@@ -255,8 +232,9 @@ import PublicLayout from '../layouts/PublicLayout.astro';
   }
 
   function goToPage(page) {
-
-    if (page < 1 || page > 2) return;
+    if (page < 1 || page > TOTAL_PAGES) {
+      return;
+    }
 
     currentPage = page;
 
@@ -269,7 +247,6 @@ import PublicLayout from '../layouts/PublicLayout.astro';
   }
 
   async function loadProducts() {
-
     loading.classList.remove('hidden');
     grid.classList.add('hidden');
     empty.classList.add('hidden');
@@ -277,12 +254,12 @@ import PublicLayout from '../layouts/PublicLayout.astro';
     pagination.classList.add('hidden');
 
     try {
-
       const { data, error } = await sb
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(MAX_PRODUCTS);
 
       if (error) {
         throw error;
@@ -291,26 +268,19 @@ import PublicLayout from '../layouts/PublicLayout.astro';
       allProducts = data || [];
 
       if (allProducts.length === 0) {
-
         loading.classList.add('hidden');
         empty.classList.remove('hidden');
         return;
       }
 
-      /*
-       * Solaris utiliza exactamente 2 páginas.
-       * Se muestran como máximo 28 productos:
-       * 14 en página 1 y 14 en página 2.
-       */
-      allProducts = allProducts.slice(0, 28);
+      allProducts = allProducts.slice(0, MAX_PRODUCTS);
 
       currentPage = 1;
 
       renderProducts();
 
     } catch (err) {
-
-      console.error('Error cargando productos:', err);
+      console.error('Error cargando productos desde Supabase:', err);
 
       loading.classList.add('hidden');
       errorBox.classList.remove('hidden');
