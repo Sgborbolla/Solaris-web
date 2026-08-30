@@ -7,12 +7,19 @@ const images = [
   'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=800',
   'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=800'
 ];
+
 const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
-const names = ['Panel Monocristalino 450W', 'Inversor Híbrido 5kW', 'Batería Litio 48V', 'Cable Solar 10mm'];
+
+const names = [
+  'Panel Monocristalino 450W',
+  'Inversor Híbrido 5kW',
+  'Batería Litio 48V',
+  'Cable Solar 10mm'
+];
 
 const products = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
-  title: `${names[i % 4]} - Modelo ${i+1}`,
+  title: `${names[i % 4]} - Modelo ${i + 1}`,
   category: categories[i % 4],
   image: images[i % 4],
   description: `Producto de alta calidad de la categoría ${categories[i % 4]}. Diseñado para ofrecer el máximo rendimiento y durabilidad en instalaciones solares residenciales y comerciales.`,
@@ -25,67 +32,197 @@ const products = Array.from({ length: 20 }, (_, i) => ({
   ]
 }));
 
-const productId = parseInt(Astro.params.id);
-const product = products.find(p => p.id === productId) || products[0];
+export function getStaticPaths() {
+  const staticImages = [
+    'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800',
+    'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=800',
+    'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=800',
+    'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=800'
+  ];
+
+  const staticCategories = [
+    'Paneles',
+    'Inversores',
+    'Baterías',
+    'Accesorios'
+  ];
+
+  const staticNames = [
+    'Panel Monocristalino 450W',
+    'Inversor Híbrido 5kW',
+    'Batería Litio 48V',
+    'Cable Solar 10mm'
+  ];
+
+  const staticProducts = Array.from({ length: 20 }, (_, i) => ({
+    id: i + 1,
+    title: `${staticNames[i % 4]} - Modelo ${i + 1}`,
+    category: staticCategories[i % 4],
+    image: staticImages[i % 4],
+    description: `Producto de alta calidad de la categoría ${staticCategories[i % 4]}. Diseñado para ofrecer el máximo rendimiento y durabilidad en instalaciones solares residenciales y comerciales.`,
+    specs: [
+      'Alta eficiencia energética',
+      'Garantía extendida',
+      'Certificación internacional',
+      'Fácil instalación',
+      'Bajo mantenimiento'
+    ]
+  }));
+
+  return staticProducts.map((product) => ({
+    params: {
+      id: String(product.id)
+    },
+    props: {
+      product
+    }
+  }));
+}
+
+const product = Astro.props.product;
 ---
-<PublicLayout title={product.title} description={`Detalles de ${product.title}`} isHome={false} activeTab="productos">
+
+<PublicLayout
+  title={product.title}
+  description={`Detalles de ${product.title}`}
+  isHome={false}
+  activeTab="productos"
+>
   <div class="max-w-6xl mx-auto px-4 py-12">
-    
+
     <!-- Breadcrumb -->
     <nav class="mb-6">
-      <a href="/productos" class="text-solaris-primary hover:underline text-sm font-semibold">← Volver a Productos</a>
+      <a
+        href="/productos"
+        class="text-solaris-primary hover:underline text-sm font-semibold"
+      >
+        ← Volver a Productos
+      </a>
     </nav>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+
       <!-- Imagen grande -->
       <div class="card overflow-hidden">
-        <img src={product.image} alt={product.title} class="w-full h-96 object-cover" />
+        <img
+          src={product.image}
+          alt={product.title}
+          class="w-full h-96 object-cover"
+        />
       </div>
 
       <!-- Información -->
       <div class="card p-8">
-        <span class="text-sm font-bold text-solaris-primary uppercase tracking-wider">{product.category}</span>
-        <h1 class="text-3xl md:text-4xl font-bold text-solaris-dark mt-2 mb-4">{product.title}</h1>
-        <p class="text-solaris-text text-lg mb-6">{product.description}</p>
-        
+
+        <span class="text-sm font-bold text-solaris-primary uppercase tracking-wider">
+          {product.category}
+        </span>
+
+        <h1 class="text-3xl md:text-4xl font-bold text-solaris-dark mt-2 mb-4">
+          {product.title}
+        </h1>
+
+        <p class="text-solaris-text text-lg mb-6">
+          {product.description}
+        </p>
+
         <div class="border-t border-solaris-border pt-6">
-          <h3 class="font-bold text-solaris-dark mb-3">Características:</h3>
+
+          <h3 class="font-bold text-solaris-dark mb-3">
+            Características:
+          </h3>
+
           <ul class="space-y-2">
+
             {product.specs.map((spec) => (
               <li class="flex items-start gap-2 text-solaris-text">
-                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+
+                <svg
+                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
+
                 <span>{spec}</span>
+
               </li>
             ))}
+
           </ul>
         </div>
 
         <div class="mt-8 flex flex-col gap-3">
-          <a href="/contacto" class="btn-primary justify-center text-center">Solicitar Cotización</a>
-          <a href="https://wa.me/1234567890" target="_blank" class="w-full py-3 bg-green-500 text-white rounded-card font-semibold hover:bg-green-600 transition-colors text-center">
+
+          <a
+            href="/contacto"
+            class="btn-primary justify-center text-center"
+          >
+            Solicitar Cotización
+          </a>
+
+          <a
+            href="https://wa.me/1234567890"
+            target="_blank"
+            class="w-full py-3 bg-green-500 text-white rounded-card font-semibold hover:bg-green-600 transition-colors text-center"
+          >
             Consultar por WhatsApp
           </a>
+
         </div>
       </div>
     </div>
 
     <!-- Productos relacionados -->
     <div class="mt-12">
-      <h2 class="text-2xl font-bold text-solaris-dark mb-6">Productos Relacionados</h2>
+
+      <h2 class="text-2xl font-bold text-solaris-dark mb-6">
+        Productos Relacionados
+      </h2>
+
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {products.filter(p => p.id !== product.id).slice(0, 4).map((p) => (
-          <a href={`/productos/${p.id}`} class="card overflow-hidden group hover:shadow-lg transition-all">
-            <div class="aspect-square overflow-hidden bg-solaris-gray">
-              <img src={p.image} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-            </div>
-            <div class="p-3">
-              <span class="text-[10px] font-bold text-solaris-primary uppercase">{p.category}</span>
-              <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">{p.title}</h3>
-            </div>
-          </a>
-        ))}
+
+        {products
+          .filter((p) => p.id !== product.id)
+          .slice(0, 4)
+          .map((p) => (
+            <a
+              href={`/productos/${p.id}`}
+              class="card overflow-hidden group hover:shadow-lg transition-all"
+            >
+
+              <div class="aspect-square overflow-hidden bg-solaris-gray">
+
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+
+              </div>
+
+              <div class="p-3">
+
+                <span class="text-[10px] font-bold text-solaris-primary uppercase">
+                  {p.category}
+                </span>
+
+                <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">
+                  {p.title}
+                </h3>
+
+              </div>
+
+            </a>
+          ))}
+
       </div>
     </div>
 
