@@ -1,211 +1,44 @@
 ---
 interface Props {
-  activeTab: 'inicio' | 'productos' | 'ahorro' | 'perfil';
-  translations?: {
-    home: string;
-    products: string;
-    savings: string;
-    profile: string;
-    more: string;
-  };
+  activeTab: string;
+  isAdmin?: boolean;
 }
 
-const { activeTab, translations } = Astro.props;
+const { activeTab, isAdmin = false } = Astro.props;
 
-const defaultTexts = {
-  home: 'Inicio',
-  products: 'Productos',
-  savings: 'Ahorro',
-  profile: 'Perfil',
-  more: 'Más'
-};
-
-const texts = translations || defaultTexts;
-
-const tabs = [
-  {
-    id: 'inicio',
-    label: texts.home,
-    href: '/',
-    icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'
-  },
-  {
-    id: 'productos',
-    label: texts.products,
-    href: '/productos',
-    icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'
-  },
-  {
-    id: 'ahorro',
-    label: texts.savings,
-    href: '/ahorro',
-    icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-  },
-  {
-    id: 'perfil',
-    label: texts.profile,
-    href: '/perfil',
-    icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-5 2 7 7 0 0012 0 7 7 0 00-5-2z'
-  }
+const publicLinks = [
+  { href: '/', label: 'Inicio', icon: '🏠', tab: 'inicio' },
+  { href: '/productos', label: 'Productos', icon: '⚡', tab: 'productos' },
+  { href: '/servicios', label: 'Servicios', icon: '', tab: 'servicios' },
+  { href: '/contacto', label: 'Contacto', icon: '📞', tab: 'contacto' },
 ];
 
-const moreMenu = [
-  {
-    label: 'Nosotros',
-    href: '/nosotros',
-    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
-  },
-  {
-    label: 'Proyectos',
-    href: '/proyectos',
-    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'
-  },
-  {
-    label: 'FAQ',
-    href: '/faq',
-    icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-  },
-  {
-    label: 'Contacto',
-    href: '/contacto',
-    icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'
-  }
+const adminLinks = [
+  { href: '/admin', label: 'Dashboard', icon: '📊', tab: 'dashboard' },
+  { href: '/admin/productos', label: 'Productos', icon: '', tab: 'productos' },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: '📦', tab: 'pedidos' },
+  { href: '/admin/ajustes', label: 'Ajustes', icon: '⚙️', tab: 'ajustes' },
 ];
+
+const links = isAdmin ? adminLinks : publicLinks;
 ---
 
-<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-[0_-4px_12px_-2px_rgba(0,0,0,0.08)] z-50">
-
-  <div class="max-w-5xl mx-auto flex justify-around items-center h-16 md:h-20 px-2 md:px-8">
-
-    {tabs.map((tab) => {
-      const isActive = activeTab === tab.id;
-
-      return (
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-lg z-50">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex justify-around items-center h-16">
+      {links.map((link) => (
         <a
-          href={tab.href}
-          class={`flex flex-col items-center justify-center w-full h-full space-y-1 md:space-y-1.5 transition-colors duration-200 relative ${
-            isActive
-              ? 'text-solaris-accent'
-              : 'text-solaris-text hover:text-solaris-primary'
+          href={link.href}
+          class={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+            activeTab === link.tab
+              ? 'text-solaris-primary'
+              : 'text-solaris-text hover:text-solaris-dark'
           }`}
         >
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class={isActive ? 'stroke-[2.5px] md:w-7 md:h-7' : 'stroke-2 md:w-7 md:h-7'}
-          >
-            <path d={tab.icon} />
-          </svg>
-
-          <span class="text-[10px] md:text-sm font-semibold tracking-wide">
-            {tab.label}
-          </span>
-
-          {isActive && (
-            <span class="absolute top-0 w-12 md:w-20 h-1 bg-solaris-accent rounded-b-full"></span>
-          )}
-
-        </a>
-      );
-    })}
-
-    <!-- Botón Más -->
-    <button
-      id="more-btn"
-      type="button"
-      class="flex flex-col items-center justify-center w-full h-full space-y-1 md:space-y-1.5 text-solaris-text hover:text-solaris-primary transition-colors relative"
-    >
-
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="md:w-7 md:h-7"
-      >
-        <circle cx="12" cy="12" r="1"/>
-        <circle cx="19" cy="12" r="1"/>
-        <circle cx="5" cy="12" r="1"/>
-      </svg>
-
-      <span class="text-[10px] md:text-sm font-semibold tracking-wide">
-        {texts.more}
-      </span>
-
-    </button>
-
-  </div>
-
-  <!-- Menú Más -->
-  <div
-    id="more-menu"
-    class="hidden absolute bottom-full left-0 right-0 bg-white border-t border-solaris-border shadow-xl py-2"
-  >
-
-    <div class="max-w-5xl mx-auto">
-
-      {moreMenu.map((item) => (
-        <a
-          href={item.href}
-          class="flex items-center gap-3 px-6 py-3 md:px-8 md:py-4 hover:bg-solaris-gray transition-colors"
-        >
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="text-solaris-primary md:w-6 md:h-6"
-          >
-            <path d={item.icon} />
-          </svg>
-
-          <span class="text-solaris-dark font-medium md:text-base">
-            {item.label}
-          </span>
-
+          <span class="text-2xl mb-1">{link.icon}</span>
+          <span class="text-xs font-semibold">{link.label}</span>
         </a>
       ))}
-
     </div>
-
   </div>
-
 </nav>
-
-<!-- Espacio para que el menú no tape el contenido -->
-<div class="h-16 md:h-20"></div>
-
-<script>
-  const moreBtn = document.getElementById('more-btn');
-  const moreMenu = document.getElementById('more-menu');
-
-  if (moreBtn && moreMenu) {
-    moreBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      moreMenu.classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', () => {
-      moreMenu.classList.add('hidden');
-    });
-  }
-</script>

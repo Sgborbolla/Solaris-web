@@ -1,16 +1,20 @@
 ---
+import BottomNav from '../components/BottomNav.astro';
+
 interface Props {
   title: string;
   activeTab?: string;
 }
+
 const { title, activeTab = 'dashboard' } = Astro.props;
 ---
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} | Solaris Admin</title>
+  <title>{title} | Admin - Marlon Solaris</title>
   <script is:inline src="https://cdn.tailwindcss.com"></script>
   <script is:inline>
     tailwind.config = {
@@ -30,38 +34,14 @@ const { title, activeTab = 'dashboard' } = Astro.props;
     }
   </script>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; }
+    body { font-family: system-ui, -apple-system, sans-serif; padding-bottom: 5rem; }
     .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .btn-primary { background: #2563eb; color: white; padding: 12px 24px; border-radius: 16px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .btn-primary:hover { background: #1d4ed8; }
   </style>
 </head>
-<body class="bg-solaris-gray pb-20">
-  <slot />
-  
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-lg z-50">
-    <div class="flex justify-around items-center h-16">
-      <a href="/admin/dashboard" class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === 'dashboard' ? 'text-solaris-primary' : 'text-solaris-text'}`}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span class="text-[10px] font-semibold">Dashboard</span>
-      </a>
-      <a href="/admin/inicio" class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === 'inicio' ? 'text-solaris-primary' : 'text-solaris-text'}`}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        <span class="text-[10px] font-semibold">Inicio</span>
-      </a>
-      <a href="/admin/productos" class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === 'productos' ? 'text-solaris-primary' : 'text-solaris-text'}`}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-        <span class="text-[10px] font-semibold">Productos</span>
-      </a>
-      <a href="/admin/proyectos" class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === 'proyectos' ? 'text-solaris-primary' : 'text-solaris-text'}`}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-        <span class="text-[10px] font-semibold">Proyectos</span>
-      </a>
-      <a href="/admin/configuracion" class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === 'configuracion' ? 'text-solaris-primary' : 'text-solaris-text'}`}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-        <span class="text-[10px] font-semibold">Config</span>
-      </a>
-    </div>
-  </nav>
+<body class="bg-solaris-gray">
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <slot />
+  </main>
+  <BottomNav activeTab={activeTab} isAdmin={true} />
 </body>
 </html>

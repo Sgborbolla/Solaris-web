@@ -9,15 +9,20 @@ interface Props {
   activeTab?: string;
   isHome?: boolean;
 }
+
 const { title, description = '', activeTab = 'inicio', isHome = false } = Astro.props;
 ---
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={description} />
-  <title>{title} | SOLARIS</title>
+  <meta name="theme-color" content="#2563eb" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <title>{title} | Marlon Solaris</title>
   <script is:inline src="https://cdn.tailwindcss.com"></script>
   <script is:inline>
     tailwind.config = {
@@ -37,7 +42,7 @@ const { title, description = '', activeTab = 'inicio', isHome = false } = Astro.
     }
   </script>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; }
+    body { font-family: system-ui, -apple-system, sans-serif; padding-bottom: 5rem; }
     .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .btn-primary { background: #2563eb; color: white; padding: 12px 24px; border-radius: 16px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .btn-primary:hover { background: #1d4ed8; }
@@ -45,10 +50,20 @@ const { title, description = '', activeTab = 'inicio', isHome = false } = Astro.
 </head>
 <body class="bg-solaris-gray">
   <Header activeTab={activeTab} />
-  <main class={isHome ? 'max-w-6xl mx-auto px-4 py-8' : ''}>
+  <main class={isHome ? 'max-w-6xl mx-auto px-4 py-8' : 'max-w-6xl mx-auto px-4 py-12'}>
     <slot />
   </main>
   <Footer />
   <BottomNav activeTab={activeTab} />
+  
+  <script is:inline>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registrado'))
+          .catch(err => console.log('SW error:', err));
+      });
+    }
+  </script>
 </body>
 </html>
