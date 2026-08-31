@@ -48,7 +48,7 @@ const { title, description = '', activeTab = 'inicio', isHome = false } = Astro.
     .btn-primary:hover { background: #1d4ed8; }
   </style>
 </head>
-<body class="bg-solaris-gray">
+<body class="bg-solaris-gray pb-24">
   <Header activeTab={activeTab} />
   <main class={isHome ? 'max-w-6xl mx-auto px-4 py-8' : 'max-w-6xl mx-auto px-4 py-12'}>
     <slot />

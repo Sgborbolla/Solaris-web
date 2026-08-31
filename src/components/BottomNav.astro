@@ -1,47 +1,71 @@
 ---
 interface Props {
   activeTab: string;
-  isAdmin?: boolean;
 }
+const { activeTab } = Astro.props;
 
-const { activeTab, isAdmin = false } = Astro.props;
-
-// Iconos originales para el público
-const publicLinks = [
+const links = [
   { href: '/', label: 'Inicio', icon: '🏠', tab: 'inicio' },
   { href: '/productos', label: 'Productos', icon: '⚡', tab: 'productos' },
   { href: '/servicios', label: 'Servicios', icon: '🛠️', tab: 'servicios' },
   { href: '/contacto', label: 'Contacto', icon: '📞', tab: 'contacto' },
 ];
 
-// Iconos originales para el admin
-const adminLinks = [
-  { href: '/admin', label: 'Dashboard', icon: '', tab: 'dashboard' },
-  { href: '/admin/productos', label: 'Productos', icon: '📦', tab: 'productos' },
-  { href: '/admin/pedidos', label: 'Pedidos', icon: '📋', tab: 'pedidos' },
-  { href: '/admin/ajustes', label: 'Ajustes', icon: '⚙️', tab: 'ajustes' },
+const moreLinks = [
+  { href: '/admin', label: 'Panel Admin', icon: '' },
+  { href: '/blog', label: 'Blog', icon: '📝' },
+  { href: '/nosotros', label: 'Nosotros', icon: '' },
 ];
-
-const links = isAdmin ? adminLinks : publicLinks;
 ---
 
-<!-- Barra fija abajo, visible en celular, tablet y PC -->
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-lg z-50">
-  <div class="max-w-6xl mx-auto px-4">
+  <div class="max-w-6xl mx-auto px-2">
     <div class="flex justify-around items-center h-16">
       {links.map((link) => (
         <a
           href={link.href}
           class={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-            activeTab === link.tab
-              ? 'text-solaris-primary'
-              : 'text-solaris-text hover:text-solaris-dark'
+            activeTab === link.tab ? 'text-solaris-primary' : 'text-solaris-text'
           }`}
         >
-          <span class="text-2xl mb-1">{link.icon}</span>
-          <span class="text-xs font-semibold">{link.label}</span>
+          <span class="text-xl mb-0.5">{link.icon}</span>
+          <span class="text-[10px] font-semibold">{link.label}</span>
         </a>
       ))}
+      
+      <!-- Botón Más -->
+      <button
+        id="btn-mas"
+        class="flex flex-col items-center justify-center flex-1 h-full transition-colors text-solaris-text hover:text-solaris-dark"
+      >
+        <span class="text-xl mb-0.5">⋮</span>
+        <span class="text-[10px] font-semibold">Más</span>
+      </button>
     </div>
   </div>
 </nav>
+
+<!-- Menú flotante que sale al tocar "Más" -->
+<div id="menu-mas" class="hidden fixed bottom-20 right-4 bg-white border border-solaris-border shadow-2xl rounded-xl p-2 z-50 w-48">
+  {moreLinks.map((link) => (
+    <a href={link.href} class="block px-4 py-3 text-sm text-solaris-dark hover:bg-solaris-gray rounded-lg transition-colors">
+      <span class="mr-2">{link.icon}</span> {link.label}
+    </a>
+  ))}
+</div>
+
+<script is:inline>
+  const btn = document.getElementById('btn-mas');
+  const menu = document.getElementById('menu-mas');
+  if (btn && menu) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (!btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+  }
+</script>
