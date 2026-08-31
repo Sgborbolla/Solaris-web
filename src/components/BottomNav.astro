@@ -4,52 +4,57 @@ interface Props {
 }
 const { activeTab } = Astro.props;
 
-const links = [
+// Las 4 páginas principales
+const mainLinks = [
   { href: '/', label: 'Inicio', icon: '🏠', tab: 'inicio' },
   { href: '/productos', label: 'Productos', icon: '⚡', tab: 'productos' },
-  { href: '/servicios', label: 'Servicios', icon: '🛠️', tab: 'servicios' },
-  { href: '/contacto', label: 'Contacto', icon: '📞', tab: 'contacto' },
+  { href: '/ahorro', label: 'Ahorro', icon: '💰', tab: 'ahorro' },
+  { href: '/perfil', label: 'Perfil', icon: '👤', tab: 'perfil' },
 ];
 
-const moreLinks = [
-  { href: '/admin', label: 'Panel Admin', icon: '' },
-  { href: '/blog', label: 'Blog', icon: '📝' },
-  { href: '/nosotros', label: 'Nosotros', icon: '' },
+// Las 4 páginas que faltan (Sin Admin)
+const extraLinks = [
+  { href: '/proyectos', label: 'Proyectos', icon: '🏗️' },
+  { href: '/faq', label: 'Preguntas Frecuentes', icon: '' },
+  { href: '/contacto', label: 'Contacto', icon: '📞' },
+  { href: '/servicios', label: 'Servicios', icon: '🛠️' },
 ];
 ---
 
-<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-lg z-50">
-  <div class="max-w-6xl mx-auto px-2">
+<!-- Barra inferior fija -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-2xl z-50">
+  <div class="max-w-4xl mx-auto px-2">
     <div class="flex justify-around items-center h-16">
-      {links.map((link) => (
+      {mainLinks.map((link) => (
         <a
           href={link.href}
-          class={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+          class={`flex flex-col items-center justify-center flex-1 h-full transition-transform active:scale-95 ${
             activeTab === link.tab ? 'text-solaris-primary' : 'text-solaris-text'
           }`}
         >
-          <span class="text-xl mb-0.5">{link.icon}</span>
-          <span class="text-[10px] font-semibold">{link.label}</span>
+          <span class="text-2xl mb-0.5 drop-shadow-sm">{link.icon}</span>
+          <span class="text-[10px] font-bold">{link.label}</span>
         </a>
       ))}
       
       <!-- Botón Más -->
       <button
         id="btn-mas"
-        class="flex flex-col items-center justify-center flex-1 h-full transition-colors text-solaris-text hover:text-solaris-dark"
+        class="flex flex-col items-center justify-center flex-1 h-full transition-transform active:scale-95 text-solaris-accent"
       >
-        <span class="text-xl mb-0.5">⋮</span>
-        <span class="text-[10px] font-semibold">Más</span>
+        <span class="text-2xl mb-0.5 drop-shadow-sm">➕</span>
+        <span class="text-[10px] font-bold">Más</span>
       </button>
     </div>
   </div>
 </nav>
 
-<!-- Menú flotante que sale al tocar "Más" -->
-<div id="menu-mas" class="hidden fixed bottom-20 right-4 bg-white border border-solaris-border shadow-2xl rounded-xl p-2 z-50 w-48">
-  {moreLinks.map((link) => (
-    <a href={link.href} class="block px-4 py-3 text-sm text-solaris-dark hover:bg-solaris-gray rounded-lg transition-colors">
-      <span class="mr-2">{link.icon}</span> {link.label}
+<!-- Menú flotante que se expande al tocar "Más" -->
+<div id="menu-mas" class="hidden fixed bottom-20 right-4 bg-white border border-solaris-border shadow-2xl rounded-2xl p-2 z-50 w-56">
+  <div class="px-4 py-2 text-xs font-bold text-solaris-text uppercase tracking-wider border-b border-solaris-border mb-1">Otras páginas</div>
+  {extraLinks.map((link) => (
+    <a href={link.href} class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-solaris-dark hover:bg-solaris-gray rounded-xl transition-colors">
+      <span class="text-xl">{link.icon}</span> {link.label}
     </a>
   ))}
 </div>
