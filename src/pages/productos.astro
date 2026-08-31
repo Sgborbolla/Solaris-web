@@ -10,20 +10,13 @@ const images = [
 const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
 const names = ['Panel Monocristalino 450W', 'Inversor Híbrido 5kW', 'Batería Litio 48V', 'Cable Solar 10mm'];
 
-// 28 productos totales (14 por página × 2 páginas)
+// 28 productos totales
 const products = Array.from({ length: 28 }, (_, i) => ({
   id: i + 1,
   title: `${names[i % 4]} - Modelo ${i+1}`,
   category: categories[i % 4],
   image: images[i % 4]
 }));
-
-// Paginación: 14 productos por página
-const currentPage = parseInt(Astro.url.searchParams.get('page') || '1');
-const itemsPerPage = 14;
-const totalPages = Math.ceil(products.length / itemsPerPage);
-const startIndex = (currentPage - 1) * itemsPerPage;
-const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
 ---
 <PublicLayout title="Productos" description="Catálogo de productos solares" isHome={false} activeTab="productos">
   <div class="max-w-6xl mx-auto px-4 py-12">
@@ -32,10 +25,10 @@ const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
       <p class="text-xl text-solaris-text">Soluciones de alta calidad para tu proyecto solar.</p>
     </div>
 
-    <!-- Cuadrícula de 2 en 2 (14 productos por página = 7 filas) -->
+    <!-- Cuadrícula de productos -->
     <div class="grid grid-cols-2 gap-4 mb-12">
-      {paginatedProducts.map((p) => (
-        <div class="card overflow-hidden group hover:shadow-lg transition-all">
+      {products.map((p, index) => (
+        <div class="product-card card overflow-hidden group hover:shadow-lg transition-all hidden" data-index={index}>
           <div class="aspect-square overflow-hidden bg-solaris-gray">
             <img src={p.image} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </div>
@@ -50,31 +43,13 @@ const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
       ))}
     </div>
 
-    <!-- Paginación: Anterior / Números / Siguiente -->
+    <!-- Botones de Paginación -->
     <div class="flex justify-center items-center gap-2 mb-16">
-      {currentPage > 1 && (
-        <a href={`?page=${currentPage - 1}`} class="px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors">← Anterior</a>
-      )}
-      
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-        <a 
-          href={`?page=${page}`} 
-          class={`px-4 py-2 rounded-card font-semibold transition-colors ${
-            page === currentPage 
-              ? 'bg-solaris-primary text-white' 
-              : 'bg-white border border-solaris-border text-solaris-dark hover:bg-solaris-gray'
-          }`}
-        >
-          {page}
-        </a>
-      ))}
-      
-      {currentPage < totalPages && (
-        <a href={`?page=${currentPage + 1}`} class="px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors">Siguiente →</a>
-      )}
+      <button class="page-btn px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors" data-page="1">1</button>
+      <button class="page-btn px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors" data-page="2">2</button>
     </div>
 
-    <!-- Sección de Detalles y Especificaciones Técnicas (abajo de todo) -->
+    <!-- Sección de Detalles y Especificaciones Técnicas -->
     <div class="card p-8 md:p-10 bg-white">
       <h2 class="text-2xl md:text-3xl font-bold text-solaris-dark mb-6 text-center">Detalles y Especificaciones Técnicas</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-solaris-text">
@@ -98,3 +73,44 @@ const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
     </div>
   </div>
 </PublicLayout>
+
+<script>
+  const itemsPerPage = 14;
+  const cards = document.querySelectorAll('.product-card');
+  const btns = document.querySelectorAll('.page-btn');
+
+  function showPage(page) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    
+    cards.forEach((card, index) => {
+      if (index >= start && index < end) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    btns.forEach(btn => {
+      if (parseInt(btn.dataset.page) === page) {
+        btn.classList.add('bg-solaris-primary', 'text-white', 'border-solaris-primary');
+        btn.classList.remove('bg-white', 'text-solaris-dark', 'border-solaris-border');
+      } else {
+        btn.classList.remove('bg-solaris-primary', 'text-white', 'border-solaris-primary');
+        btn.classList.add('bg-white', 'text-solaris-dark', 'border-solaris-border');
+      }
+    });
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showPage(parseInt(btn.dataset.page));
+    });
+  });
+
+  // Inicializar página 1
+  showPage(1);
+</script>
