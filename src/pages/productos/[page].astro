@@ -44,11 +44,11 @@ const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
       {paginatedProducts.map((p) => (
         <div class="card overflow-hidden group hover:shadow-lg transition-all">
           <div class="aspect-square overflow-hidden bg-solaris-gray">
-            <img src={p.image} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <img src={p.image} alt={p.name} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </div>
           <div class="p-3">
             <span class="text-[10px] font-bold text-solaris-primary uppercase tracking-wider">{p.category}</span>
-            <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">{p.title}</h3>
+            <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">{p.name}</h3>
             <a href={`/productos/${p.id}`} class="block w-full mt-3 py-2 bg-solaris-dark text-white text-xs font-semibold rounded-card hover:bg-solaris-primary transition-colors text-center">
               Ver Detalles
             </a>
