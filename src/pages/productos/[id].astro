@@ -1,0 +1,82 @@
+---
+import PublicLayout from '../../layouts/PublicLayout.astro';
+
+export function getStaticPaths() {
+  // Generar rutas para los 28 productos
+  return Array.from({ length: 28 }, (_, i) => ({
+    params: { id: String(i + 1) }
+  }));
+}
+
+const { id } = Astro.params;
+const productId = parseInt(id || '1');
+
+const images = [
+  'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800',
+  'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=800',
+  'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=800',
+  'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=800'
+];
+const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
+const names = ['Panel Monocristalino', 'Inversor Híbrido', 'Batería Litio', 'Cable Solar'];
+
+const product = {
+  id: productId,
+  name: `${names[(productId - 1) % 4]} - Modelo ${productId}`,
+  category: categories[(productId - 1) % 4],
+  image: images[(productId - 1) % 4],
+  description: `Producto solar de alta calidad. Modelo ${productId} con tecnología de última generación. Eficiencia garantizada y durabilidad excepcional.`,
+  price: 100 + (productId - 1) * 10
+};
+---
+<PublicLayout title={product.name} description={product.description} isHome={false} activeTab="productos">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Botón Volver -->
+    <a href="/productos" class="inline-flex items-center text-solaris-primary font-semibold mb-6 hover:underline">
+      ← Volver a Productos
+    </a>
+
+    <!-- Contenido del Producto -->
+    <div class="card overflow-hidden">
+      <div class="aspect-video overflow-hidden bg-solaris-gray">
+        <img src={product.image} alt={product.name} class="w-full h-full object-cover" />
+      </div>
+      
+      <div class="p-6 md:p-8">
+        <span class="text-xs font-bold text-solaris-primary uppercase tracking-wider">{product.category}</span>
+        <h1 class="text-3xl md:text-4xl font-bold text-solaris-dark mt-2 mb-4">{product.name}</h1>
+        
+        <div class="flex items-center gap-4 mb-6">
+          <span class="text-3xl font-bold text-solaris-accent">${product.price}</span>
+          <span class="text-sm text-solaris-text">USD</span>
+        </div>
+
+        <p class="text-lg text-solaris-text mb-8 leading-relaxed">{product.description}</p>
+
+        <!-- Especificaciones -->
+        <div class="border-t border-solaris-border pt-6 mb-8">
+          <h2 class="text-xl font-bold text-solaris-dark mb-4">Especificaciones Técnicas</h2>
+          <ul class="space-y-2 text-solaris-text">
+            <li>✓ Alta eficiencia energética</li>
+            <li>✓ Garantía de 25 años</li>
+            <li>✓ Resistente a condiciones extremas</li>
+            <li>✓ Certificación internacional</li>
+            <li>✓ Instalación profesional incluida</li>
+          </ul>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="https://wa.me/5350000000?text=Hola, me interesa el producto: {product.name}" 
+             class="flex-1 py-4 bg-green-500 text-white font-bold rounded-card hover:bg-green-600 transition-colors text-center">
+            💬 Consultar por WhatsApp
+          </a>
+          <a href="/contacto" 
+             class="flex-1 py-4 bg-solaris-primary text-white font-bold rounded-card hover:bg-blue-700 transition-colors text-center">
+            📧 Solicitar Cotización
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</PublicLayout>
