@@ -6,23 +6,26 @@ interface Props {
 
 const { activeTab, isAdmin = false } = Astro.props;
 
+// Iconos originales para el público
 const publicLinks = [
   { href: '/', label: 'Inicio', icon: '🏠', tab: 'inicio' },
   { href: '/productos', label: 'Productos', icon: '⚡', tab: 'productos' },
-  { href: '/servicios', label: 'Servicios', icon: '', tab: 'servicios' },
+  { href: '/servicios', label: 'Servicios', icon: '🛠️', tab: 'servicios' },
   { href: '/contacto', label: 'Contacto', icon: '📞', tab: 'contacto' },
 ];
 
+// Iconos originales para el admin
 const adminLinks = [
-  { href: '/admin', label: 'Dashboard', icon: '📊', tab: 'dashboard' },
-  { href: '/admin/productos', label: 'Productos', icon: '', tab: 'productos' },
-  { href: '/admin/pedidos', label: 'Pedidos', icon: '📦', tab: 'pedidos' },
+  { href: '/admin', label: 'Dashboard', icon: '', tab: 'dashboard' },
+  { href: '/admin/productos', label: 'Productos', icon: '📦', tab: 'productos' },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: '📋', tab: 'pedidos' },
   { href: '/admin/ajustes', label: 'Ajustes', icon: '⚙️', tab: 'ajustes' },
 ];
 
 const links = isAdmin ? adminLinks : publicLinks;
 ---
 
+<!-- Barra fija abajo, visible en celular, tablet y PC -->
 <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-solaris-border shadow-lg z-50">
   <div class="max-w-6xl mx-auto px-4">
     <div class="flex justify-around items-center h-16">
