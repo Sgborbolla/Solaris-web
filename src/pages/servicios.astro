@@ -1,0 +1,64 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+---
+<PublicLayout title="Servicios" description="Servicios de energía solar" isHome={false} activeTab="servicios">
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Nuestros Servicios</h1>
+      <p class="text-xl text-solaris-text">Soluciones integrales en energía solar para tu hogar o empresa.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Servicio 1 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-2">Instalación de Paneles</h3>
+        <p class="text-solaris-text">Instalación profesional de paneles solares con garantía de 25 años. Incluye diseño del sistema y tramitación de permisos.</p>
+      </div>
+
+      <!-- Servicio 2 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-2">Mantenimiento</h3>
+        <p class="text-solaris-text">Servicio de mantenimiento preventivo y correctivo para asegurar el máximo rendimiento de tu sistema solar.</p>
+      </div>
+
+      <!-- Servicio 3 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-2">Asesoría Energética</h3>
+        <p class="text-solaris-text">Evaluación personalizada de tu consumo energético y diseño del sistema solar óptimo para tus necesidades.</p>
+      </div>
+
+      <!-- Servicio 4 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-solaris-dark mb-2">Monitoreo 24/7</h3>
+        <p class="text-solaris-text">Sistema de monitoreo en tiempo real para que puedas ver la producción de energía desde tu celular en cualquier momento.</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="mt-12 text-center">
+      <a href="/contacto" class="inline-block px-8 py-4 bg-solaris-primary text-white font-bold rounded-card hover:bg-blue-700 transition-colors">
+        Solicitar Cotización
+      </a>
+    </div>
+  </div>
+</PublicLayout>
