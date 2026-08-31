@@ -1,5 +1,15 @@
 ---
-import PublicLayout from '../layouts/PublicLayout.astro';
+import PublicLayout from '../../layouts/PublicLayout.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { page: '1' } },
+    { params: { page: '2' } },
+  ];
+}
+
+const { page } = Astro.params;
+const currentPage = parseInt(page || '1');
 
 const images = [
   'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
@@ -10,25 +20,29 @@ const images = [
 const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
 const names = ['Panel Monocristalino 450W', 'Inversor Híbrido 5kW', 'Batería Litio 48V', 'Cable Solar 10mm'];
 
-// 28 productos totales
 const products = Array.from({ length: 28 }, (_, i) => ({
   id: i + 1,
   title: `${names[i % 4]} - Modelo ${i+1}`,
   category: categories[i % 4],
   image: images[i % 4]
 }));
+
+const itemsPerPage = 14;
+const totalPages = 2;
+const startIndex = (currentPage - 1) * itemsPerPage;
+const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
 ---
-<PublicLayout title="Productos" description="Catálogo de productos solares" isHome={false} activeTab="productos">
+<PublicLayout title={`Productos - Página ${currentPage}`} description="Catálogo de productos solares" isHome={false} activeTab="productos">
   <div class="max-w-6xl mx-auto px-4 py-12">
     <div class="text-center mb-10">
       <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Nuestros Productos</h1>
-      <p class="text-xl text-solaris-text">Soluciones de alta calidad para tu proyecto solar.</p>
+      <p class="text-xl text-solaris-text">Soluciones de alta calidad para tu proyecto solar. Página {currentPage} de {totalPages}</p>
     </div>
 
-    <!-- Cuadrícula de productos -->
+    <!-- Cuadrícula de 2 en 2 (14 productos por página) -->
     <div class="grid grid-cols-2 gap-4 mb-12">
-      {products.map((p, index) => (
-        <div class="product-card card overflow-hidden group hover:shadow-lg transition-all hidden" data-index={index}>
+      {paginatedProducts.map((p) => (
+        <div class="card overflow-hidden group hover:shadow-lg transition-all">
           <div class="aspect-square overflow-hidden bg-solaris-gray">
             <img src={p.image} alt={p.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </div>
@@ -43,10 +57,18 @@ const products = Array.from({ length: 28 }, (_, i) => ({
       ))}
     </div>
 
-    <!-- Botones de Paginación -->
+    <!-- Paginación Real: Botones que cambian la URL -->
     <div class="flex justify-center items-center gap-2 mb-16">
-      <button class="page-btn px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors" data-page="1">1</button>
-      <button class="page-btn px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors" data-page="2">2</button>
+      {currentPage > 1 && (
+        <a href="/productos/1" class="px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors">← Anterior</a>
+      )}
+      
+      <a href="/productos/1" class={`px-4 py-2 rounded-card font-semibold transition-colors ${currentPage === 1 ? 'bg-solaris-primary text-white' : 'bg-white border border-solaris-border text-solaris-dark hover:bg-solaris-gray'}`}>1</a>
+      <a href="/productos/2" class={`px-4 py-2 rounded-card font-semibold transition-colors ${currentPage === 2 ? 'bg-solaris-primary text-white' : 'bg-white border border-solaris-border text-solaris-dark hover:bg-solaris-gray'}`}>2</a>
+      
+      {currentPage < totalPages && (
+        <a href="/productos/2" class="px-4 py-2 bg-white border border-solaris-border rounded-card text-solaris-dark font-semibold hover:bg-solaris-gray transition-colors">Siguiente →</a>
+      )}
     </div>
 
     <!-- Sección de Detalles y Especificaciones Técnicas -->
@@ -73,44 +95,3 @@ const products = Array.from({ length: 28 }, (_, i) => ({
     </div>
   </div>
 </PublicLayout>
-
-<script>
-  const itemsPerPage = 14;
-  const cards = document.querySelectorAll('.product-card');
-  const btns = document.querySelectorAll('.page-btn');
-
-  function showPage(page) {
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    
-    cards.forEach((card, index) => {
-      if (index >= start && index < end) {
-        card.classList.remove('hidden');
-      } else {
-        card.classList.add('hidden');
-      }
-    });
-
-    btns.forEach(btn => {
-      if (parseInt(btn.dataset.page) === page) {
-        btn.classList.add('bg-solaris-primary', 'text-white', 'border-solaris-primary');
-        btn.classList.remove('bg-white', 'text-solaris-dark', 'border-solaris-border');
-      } else {
-        btn.classList.remove('bg-solaris-primary', 'text-white', 'border-solaris-primary');
-        btn.classList.add('bg-white', 'text-solaris-dark', 'border-solaris-border');
-      }
-    });
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  btns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      showPage(parseInt(btn.dataset.page));
-    });
-  });
-
-  // Inicializar página 1
-  showPage(1);
-</script>
