@@ -1,0 +1,60 @@
+---
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { createClient } from '../lib/supabase';
+
+const supabase = createClient();
+const { data: products, error } = await supabase
+  .from('products')
+  .select('*')
+  .eq('is_active', true)
+  .order('id', { ascending: true });
+---
+<PublicLayout title="Productos" description="Catálogo completo" isHome={false} activeTab="productos">
+  <div class="max-w-6xl mx-auto px-4 py-12">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Nuestros Productos</h1>
+      <p class="text-xl text-solaris-text">Soluciones de alta calidad para tu proyecto solar.</p>
+    </div>
+
+    <!-- Cuadrícula de 2 en 2 con todos los productos -->
+    <div class="grid grid-cols-2 gap-4 mb-12">
+      {products && products.map((p) => (
+        <div class="card overflow-hidden group hover:shadow-lg transition-all">
+          <div class="aspect-square overflow-hidden bg-solaris-gray">
+            <img src={p.image} alt={p.name} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          </div>
+          <div class="p-3">
+            <span class="text-[10px] font-bold text-solaris-primary uppercase tracking-wider">{p.category}</span>
+            <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">{p.name}</h3>
+            <a href={`/productos/${p.id}`} class="block w-full mt-3 py-2 bg-solaris-dark text-white text-xs font-semibold rounded-card hover:bg-solaris-primary transition-colors text-center">
+              Ver Detalles
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Sección de Detalles y Especificaciones Técnicas -->
+    <div class="card p-8 md:p-10 bg-white">
+      <h2 class="text-2xl md:text-3xl font-bold text-solaris-dark mb-6 text-center">Detalles y Especificaciones Técnicas</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-solaris-text">
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Paneles Solares</h3>
+          <p class="text-sm">Tecnología monocristalina de alta eficiencia. Garantía de 25 años de rendimiento.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Inversores</h3>
+          <p class="text-sm">Inversores híbridos y de red con monitoreo WiFi en tiempo real. Eficiencia superior al 98%.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Baterías</h3>
+          <p class="text-sm">Baterías de litio LiFePO4 de ciclo profundo. Más de 6000 ciclos de vida útil.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-solaris-dark mb-2 text-lg">Accesorios</h3>
+          <p class="text-sm">Cables solares certificados, conectores MC4, estructuras de aluminio anodizado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</PublicLayout>
