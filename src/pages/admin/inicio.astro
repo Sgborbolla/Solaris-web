@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase.js';
 
 // Logo fijo (no editable)
 const { data: logoData } = await supabase.from('site_settings').select('value').eq('key', 'site_logo').single();
-const site_logo = logoData?.value || '/images/logo.png';
+const site_logo = 'https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png';
 
 // Textos fijos (no editables desde el admin)
 const { data: heroData } = await supabase.from('hero_content').select('*').single();

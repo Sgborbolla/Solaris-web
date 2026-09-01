@@ -21,7 +21,7 @@ function getYouTubeId(url) {
     <img src={hero?.background_image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80'} alt="Hero" class="w-full h-80 md:h-[28rem] object-cover" />
     {hero?.logo_url && <div class="absolute top-6 left-1/2 -translate-x-1/2 z-30"><img src={hero.logo_url} alt="Logo" class="h-20 md:h-28 w-auto object-contain drop-shadow-2xl bg-white/90 p-3 rounded-card" /></div>}
     <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20 text-center">
-      <h1 class="text-3xl md:text-5xl font-bold text-white mb-3 tracking-tight drop-shadow-lg">{hero?.title || '<span style="color: #fbbf24; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">ENERGÍA PARA TU FUTURO</span>'}</h1>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-3 tracking-tight drop-shadow-lg">{hero?.title || '<span style="color: #fbbf24; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);"><span style="color: #fbbf24; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-weight: bold;">ENERGÍA PARA TU FUTURO</span></span>'}</h1>
       <p class="text-solaris-gray text-base md:text-lg mb-6 max-w-xl mx-auto drop-shadow">{hero?.subtitle || ''}</p>
       <a href={hero?.cta_link || '/productos'} class="btn-primary inline-flex">{hero?.cta_text || 'VER PRODUCTOS'}</a>
     </div>
