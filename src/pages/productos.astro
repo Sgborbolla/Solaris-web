@@ -1,55 +1,173 @@
 ---
 import PublicLayout from '../layouts/PublicLayout.astro';
-
-// 28 productos fijos para que Cloudflare no falle al construir
-const images = [
-  'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400',
-  'https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=400',
-  'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=400',
-  'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=400'
-];
-const categories = ['Paneles', 'Inversores', 'Baterías', 'Accesorios'];
-const names = ['Panel Monocristalino', 'Inversor Híbrido', 'Batería Litio', 'Cable Solar'];
-
-const products = Array.from({ length: 28 }, (_, i) => ({
-  id: i + 1,
-  name: `${names[i % 4]} - Modelo ${i+1}`,
-  category: categories[i % 4],
-  image: images[i % 4]
-}));
 ---
-<PublicLayout title="Productos" description="Catálogo completo" isHome={false} activeTab="productos">
+
+<PublicLayout
+  title="Productos"
+  description="Catálogo completo"
+  isHome={false}
+  activeTab="productos"
+>
   <div class="max-w-6xl mx-auto px-4 py-12">
+
     <div class="text-center mb-10">
-      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">Nuestros Productos</h1>
-      <p class="text-xl text-solaris-text">Soluciones de alta calidad para tu proyecto solar.</p>
+      <h1 class="text-4xl md:text-5xl font-bold text-solaris-dark mb-4">
+        Nuestros Productos
+      </h1>
+      <p class="text-xl text-solaris-text">
+        Soluciones de alta calidad para tu proyecto solar.
+      </p>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 mb-12">
-      {products.map((p) => (
-        <div class="card overflow-hidden group hover:shadow-lg transition-all">
+    <div id="products-loading" class="text-center py-12">
+      <div class="inline-block w-10 h-10 border-4 border-solaris-primary border-t-transparent rounded-full animate-spin"></div>
+      <p class="mt-4 text-solaris-text">Cargando productos...</p>
+    </div>
+
+    <div id="products-error" class="hidden card p-8 text-center mb-12">
+      <h2 class="text-xl font-bold text-solaris-dark mb-2">
+        No se pudieron cargar los productos
+      </h2>
+      <p id="products-error-text" class="text-solaris-text text-sm"></p>
+      <button
+        id="retry-products"
+        type="button"
+        class="mt-5 px-6 py-3 bg-solaris-dark text-white rounded-card font-semibold"
+      >
+        Intentar nuevamente
+      </button>
+    </div>
+
+    <div
+      id="products-grid"
+      class="grid grid-cols-2 gap-4 mb-12"
+    ></div>
+
+    <div
+      id="products-empty"
+      class="hidden card p-10 text-center mb-12"
+    >
+      <h2 class="text-xl font-bold text-solaris-dark mb-2">
+        No hay productos disponibles
+      </h2>
+      <p class="text-solaris-text">
+        Actualmente no hay productos activos en el catálogo.
+      </p>
+    </div>
+
+  </div>
+</PublicLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script is:inline>
+  const SUPABASE_URL = 'https://djyysffxpbvbfkcmrhta.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo';
+
+  const loading = document.getElementById('products-loading');
+  const grid = document.getElementById('products-grid');
+  const errorBox = document.getElementById('products-error');
+  const errorText = document.getElementById('products-error-text');
+  const emptyBox = document.getElementById('products-empty');
+  const retryButton = document.getElementById('retry-products');
+
+  async function loadProducts() {
+    loading.classList.remove('hidden');
+    grid.innerHTML = '';
+    errorBox.classList.add('hidden');
+    emptyBox.classList.add('hidden');
+
+    try {
+      if (!window.supabase) {
+        throw new Error('No se pudo cargar la biblioteca de Supabase.');
+      }
+
+      const client = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+      );
+
+      const { data, error } = await client
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      loading.classList.add('hidden');
+
+      if (!data || data.length === 0) {
+        emptyBox.classList.remove('hidden');
+        return;
+      }
+
+      data.forEach((product) => {
+        const card = document.createElement('div');
+
+        card.className =
+          'card overflow-hidden group hover:shadow-lg transition-all';
+
+        const image =
+          product.image ||
+          'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800';
+
+        const name = product.name || 'Producto solar';
+        const category = product.category || 'Solar';
+
+        card.innerHTML = `
           <div class="aspect-square overflow-hidden bg-solaris-gray">
-            <img src={p.image} alt={p.name} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <img
+              src="${escapeHtml(image)}"
+              alt="${escapeHtml(name)}"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
           </div>
+
           <div class="p-3">
-            <span class="text-[10px] font-bold text-solaris-primary uppercase tracking-wider">{p.category}</span>
-            <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">{p.name}</h3>
-            <a href={`/productos/${p.id}`} class="block w-full mt-3 py-2 bg-solaris-dark text-white text-xs font-semibold rounded-card hover:bg-solaris-primary transition-colors text-center">
+            <span class="text-[10px] font-bold text-solaris-primary uppercase tracking-wider">
+              ${escapeHtml(category)}
+            </span>
+
+            <h3 class="text-sm font-bold text-solaris-dark mt-1 leading-tight line-clamp-2">
+              ${escapeHtml(name)}
+            </h3>
+
+            <a
+              href="/producto?id=${encodeURIComponent(product.id)}"
+              class="block w-full mt-3 py-2 bg-solaris-dark text-white text-xs font-semibold rounded-card hover:bg-solaris-primary transition-colors text-center"
+            >
               Ver Detalles
             </a>
           </div>
-        </div>
-      ))}
-    </div>
+        `;
 
-    <div class="card p-8 md:p-10 bg-white">
-      <h2 class="text-2xl md:text-3xl font-bold text-solaris-dark mb-6 text-center">Detalles y Especificaciones Técnicas</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-solaris-text">
-        <div><h3 class="font-bold text-solaris-dark mb-2 text-lg">Paneles Solares</h3><p class="text-sm">Tecnología monocristalina de alta eficiencia. Garantía de 25 años.</p></div>
-        <div><h3 class="font-bold text-solaris-dark mb-2 text-lg">Inversores</h3><p class="text-sm">Inversores híbridos y de red con monitoreo WiFi en tiempo real.</p></div>
-        <div><h3 class="font-bold text-solaris-dark mb-2 text-lg">Baterías</h3><p class="text-sm">Baterías de litio LiFePO4 de ciclo profundo. Más de 6000 ciclos.</p></div>
-        <div><h3 class="font-bold text-solaris-dark mb-2 text-lg">Accesorios</h3><p class="text-sm">Cables solares certificados, conectores MC4 y estructuras.</p></div>
-      </div>
-    </div>
-  </div>
-</PublicLayout>
+        grid.appendChild(card);
+      });
+
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+
+      loading.classList.add('hidden');
+      errorBox.classList.remove('hidden');
+
+      errorText.textContent =
+        error?.message ||
+        'Ocurrió un error al cargar el catálogo.';
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  retryButton?.addEventListener('click', loadProducts);
+
+  loadProducts();
+</script>
