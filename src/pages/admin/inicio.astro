@@ -40,48 +40,51 @@ const hero_image = hero?.background_image || '';
       <form id="hero-form" class="space-y-4">
         <input type="hidden" id="hero-id" value={hero?.id || ''} />
         
-        <!-- IMAGEN DE FONDO (cuadro bonito) -->
-        <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
-          <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
-          <p class="text-xs text-solaris-text mb-3">Sube la imagen que aparecerá de fondo (mañana subirás el logotipo aquí)</p>
-          
-          {hero?.background_image ? (
-            <div class="relative w-full rounded-card overflow-hidden border-2 border-solaris-border group">
-              <img src={hero.background_image} alt="Fondo actual" class="w-full h-48 object-cover" />
-              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <button type="button" id="replace-hero-btn" class="bg-white text-solaris-dark px-3 py-2 rounded text-sm font-semibold">Reemplazar</button>
-                <button type="button" id="delete-hero-btn" class="bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold">Eliminar</button>
-              </div>
-            </div>
-          ) : (
-            <label class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
-              <div class="flex flex-col items-center justify-center p-6">
-                <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
-                <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
-              </div>
-              <input type="file" id="hero-image" accept="image/*" class="hidden" />
-            </label>
-          )}
+            <!-- IMAGEN DE FONDO (cuadro bonito) -->
+    <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
+      <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
+      <p class="text-xs text-solaris-text mb-3">Sube la imagen que aparecerá de fondo</p>
 
-          <div id="hero-preview-container" class="mt-3 hidden">
-            <img id="hero-preview" src="" alt="Preview" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-            <button type="button" id="remove-hero-preview" class="mt-2 text-sm text-red-500 hover:underline">Quitar imagen</button>
-          </div>
+      <!-- Input oculto SIEMPRE presente en el DOM para que funcione el botón Reemplazar -->
+      <input type="file" id="hero-image" accept="image/*" class="hidden" />
 
-          <div id="hero-upload-progress" class="hidden mt-3">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-xs text-solaris-text">Subiendo...</span>
-              <span id="hero-progress-percent" class="text-xs font-semibold text-solaris-primary">0%</span>
-            </div>
-            <div class="w-full bg-solaris-gray rounded-full h-2">
-              <div id="hero-progress-bar" class="bg-solaris-primary h-2 rounded-full transition-all" style="width: 0%"></div>
-            </div>
+      {hero?.background_image ? (
+        <div class="relative w-full rounded-card overflow-hidden border-2 border-solaris-border mb-3">
+          <img src={hero.background_image} alt="Fondo actual" class="w-full h-48 object-cover" />
+          <!-- Botones SIEMPRE VISIBLES en móvil (sin group-hover) -->
+          <div class="flex gap-2 p-2 bg-solaris-gray/50 border-t border-solaris-border">
+            <button type="button" id="replace-hero-btn" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🔄 Reemplazar</button>
+            <button type="button" id="delete-hero-btn" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🗑️ Eliminar</button>
           </div>
-          <div id="hero-upload-success" class="hidden mt-3 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-card text-sm">✅ Carga exitosa</div>
         </div>
+      ) : (
+        <label for="hero-image" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
+          <div class="flex flex-col items-center justify-center p-6">
+            <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
+            <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
+          </div>
+        </label>
+      )}
+
+      <div id="hero-preview-container" class="mt-3 hidden">
+        <img id="hero-preview" src="" alt="Preview" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
+        <button type="button" id="remove-hero-preview" class="mt-2 text-sm text-red-500 hover:underline">Quitar imagen</button>
+      </div>
+
+      <div id="hero-upload-progress" class="hidden mt-3">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs text-solaris-text">Subiendo...</span>
+          <span id="hero-progress-percent" class="text-xs font-semibold text-solaris-primary">0%</span>
+        </div>
+        <div class="w-full bg-solaris-gray rounded-full h-2">
+          <div id="hero-progress-bar" class="bg-solaris-primary h-2 rounded-full transition-all" style="width: 0%"></div>
+        </div>
+      </div>
+      <div id="hero-upload-success" class="hidden mt-3 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-card text-sm">✅ Carga exitosa</div>
+    </div>
 
         <!-- TEXTOS -->
         <div>
