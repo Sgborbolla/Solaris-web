@@ -16,14 +16,29 @@ function getYouTubeId(url) {
 }
 ---
 <PublicLayout title={hero?.title || 'SOLARIS'} description={hero?.subtitle || ''} activeTab="inicio" isHome={true}>
-  <section class="relative rounded-card overflow-hidden shadow-lg mb-8 bg-solaris-dark">
-    <div class="absolute inset-0 bg-gradient-to-t from-solaris-dark/90 via-solaris-dark/50 to-transparent z-10"></div>
-    <img src={hero?.background_image || 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80'} alt="Hero" class="w-full h-80 md:h-[28rem] object-cover" />
-    <div class="absolute top-6 left-1/2 -translate-x-1/2 z-30"><img src="https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png" alt="Logo SolarPower" class="h-20 md:h-28 w-auto object-contain drop-shadow-2xl bg-white/90 p-3 rounded-card" /></div>
-    <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20 text-center">
-      <h1 class="text-3xl md:text-5xl font-bold mb-3 tracking-tight drop-shadow-lg" style="color: #fbbf24; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); font-weight: 900;">{hero?.title || 'ENERGÍA PARA TU FUTURO'}</h1>
-      <p class="text-base md:text-lg mb-6 max-w-xl mx-auto drop-shadow" style="color: #22c55e; font-weight: 600; font-size: 1.1em;">{hero?.subtitle || 'Descubre cómo la energía solar puede transformar tu hogar.'}</p>
-      <a href={hero?.cta_link || '/productos'} class="btn-primary inline-flex">{hero?.cta_text || 'VER PRODUCTOS'}</a>
+  <section class="rounded-card overflow-hidden shadow-lg mb-8 bg-gradient-to-b from-solaris-dark to-black py-16 px-6 md:py-24">
+    <div class="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto">
+      
+      <!-- Título Amarillo -->
+      <h1 class="text-4xl md:text-6xl font-bold tracking-tight" style="color: #fbbf24; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); font-weight: 900;">
+        {hero?.title || 'ENERGÍA PARA TU FUTURO'}
+      </h1>
+      
+      <!-- Subtítulo Verde -->
+      <p class="text-lg md:text-2xl max-w-2xl mx-auto" style="color: #22c55e; font-weight: 600;">
+        {hero?.subtitle || 'Descubre cómo la energía solar puede transformar tu hogar.'}
+      </p>
+
+      <!-- Botón de acción -->
+      <a href={hero?.cta_link || '/productos'} class="btn-primary inline-flex text-lg px-8 py-3 rounded-full shadow-lg hover:scale-105 transition-transform">
+        {hero?.cta_text || 'VER PRODUCTOS'}
+      </a>
+
+      <!-- Logotipo Grande Debajo de todo -->
+      <div class="mt-6 pt-6 border-t border-white/10 w-full flex justify-center">
+        <img src="https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png" alt="Logo SolarPower" class="h-48 md:h-64 w-auto object-contain drop-shadow-2xl" />
+      </div>
+
     </div>
   </section>
   <section class="py-8">
