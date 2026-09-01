@@ -40,20 +40,20 @@ const hero_image = hero?.background_image || '';
       <form id="hero-form" class="space-y-4">
         <input type="hidden" id="hero-id" value={hero?.id || ''} />
         
-            <!-- IMAGEN DE FONDO (cuadro bonito) -->
+                <!-- IMAGEN DE FONDO -->
     <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
       <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
       <p class="text-xs text-solaris-text mb-3">Sube la imagen que aparecerá de fondo</p>
 
-      <!-- Input oculto SIEMPRE presente en el DOM para que funcione el botón Reemplazar -->
-      <input type="file" id="hero-image" accept="image/*" class="hidden" />
-
       {hero?.background_image ? (
         <div class="relative w-full rounded-card overflow-hidden border-2 border-solaris-border mb-3">
           <img src={hero.background_image} alt="Fondo actual" class="w-full h-48 object-cover" />
-          <!-- Botones SIEMPRE VISIBLES en móvil (sin group-hover) -->
           <div class="flex gap-2 p-2 bg-solaris-gray/50 border-t border-solaris-border">
-            <button type="button" id="replace-hero-btn" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🔄 Reemplazar</button>
+            <!-- El LABEL abre la galería nativamente en el celular, sin JS -->
+            <label for="hero-image" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform text-center cursor-pointer">
+              🔄 Reemplazar
+              <input type="file" id="hero-image" name="hero_image" accept="image/*" class="hidden" />
+            </label>
             <button type="button" id="delete-hero-btn" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🗑️ Eliminar</button>
           </div>
         </div>
@@ -66,13 +66,9 @@ const hero_image = hero?.background_image || '';
             <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
             <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
           </div>
+          <input type="file" id="hero-image" name="hero_image" accept="image/*" class="hidden" />
         </label>
       )}
-
-      <div id="hero-preview-container" class="mt-3 hidden">
-        <img id="hero-preview" src="" alt="Preview" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-        <button type="button" id="remove-hero-preview" class="mt-2 text-sm text-red-500 hover:underline">Quitar imagen</button>
-      </div>
 
       <div id="hero-upload-progress" class="hidden mt-3">
         <div class="flex items-center justify-between mb-1">
@@ -221,7 +217,78 @@ const hero_image = hero?.background_image || '';
 
   <div id="toast" class="hidden fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-card shadow-lg z-50"></div>
 
-  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    // ===== HERO IMAGEN (Lógica simple y directa) =====
+    const heroFileInput = document.getElementById('hero-image');
+    const deleteHeroBtn = document.getElementById('delete-hero-btn');
+    const heroId = document.getElementById('hero-id')?.value;
+
+    if (heroFileInput) {
+      heroFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        if (file.size > 5 * 1024 * 1024) { 
+          showToast('❌ La imagen no debe superar los 5MB'); 
+          heroFileInput.value = '';
+          return; 
+        }
+
+        const progressDiv = document.getElementById('hero-upload-progress');
+        const progressBar = document.getElementById('hero-progress-bar');
+        const progressPercent = document.getElementById('hero-progress-percent');
+        const successDiv = document.getElementById('hero-upload-success');
+        
+        if (progressDiv) progressDiv.classList.remove('hidden');
+        if (successDiv) successDiv.classList.add('hidden');
+        if (progressBar) progressBar.style.width = '30%';
+        if (progressPercent) progressPercent.textContent = '30%';
+
+        try {
+          if (progressBar) progressBar.style.width = '60%';
+          if (progressPercent) progressPercent.textContent = '60%';
+          
+          const imageUrl = await uploadFile(file, 'site');
+          
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressPercent) progressPercent.textContent = '100%';
+
+          if (heroId) {
+            await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+          } else {
+            await sb.from('hero_content').insert({ background_image: imageUrl });
+          }
+
+          if (progressDiv) progressDiv.classList.add('hidden');
+          if (successDiv) {
+            successDiv.classList.remove('hidden');
+            showToast('✅ Imagen actualizada. Recargando...');
+            setTimeout(() => location.reload(), 1500);
+          }
+        } catch (err) {
+          if (progressDiv) progressDiv.classList.add('hidden');
+          showToast('❌ Error: ' + err.message);
+          heroFileInput.value = '';
+        }
+      });
+    }
+
+    if (deleteHeroBtn) {
+      deleteHeroBtn.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
+        try {
+          if (heroId) {
+            await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+          }
+          showToast('✅ Imagen eliminada. Recargando...');
+          setTimeout(() => location.reload(), 1000);
+        } catch (err) {
+          showToast('❌ Error al eliminar: ' + err.message);
+        }
+      });
+    }
+
+  </script>
   <script is:inline>
     const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
     sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
@@ -330,86 +397,7 @@ const hero_image = hero?.background_image || '';
       selectedHeroFile = null; heroImageInput.value = ''; heroPreviewContainer.classList.add('hidden');
     });
 
-    // ===== HERO: REEMPLAZAR Y ELIMINAR =====
-const heroFileInput = document.getElementById('hero-image');
-const replaceBtn = document.getElementById('replace-hero-btn');
-const deleteBtn = document.getElementById('delete-hero-btn');
-const heroForm = document.getElementById('hero-form');
-
-// Al tocar "Reemplazar", activar el input de archivo oculto
-if (replaceBtn && heroFileInput) {
-  replaceBtn.addEventListener('click', () => {
-    heroFileInput.click();
-  });
-}
-
-// Cuando se selecciona un archivo, mostrar preview y preparar envío
-if (heroFileInput) {
-  heroFileInput.addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
     
-    if (file.size > 5 * 1024 * 1024) { 
-      showToast('❌ La imagen no debe superar los 5MB'); 
-      heroFileInput.value = '';
-      return; 
-    }
-
-    // Mostrar barra de progreso
-    const progressDiv = document.getElementById('hero-upload-progress');
-    const progressBar = document.getElementById('hero-progress-bar');
-    const progressPercent = document.getElementById('hero-progress-percent');
-    const successDiv = document.getElementById('hero-upload-success');
-    
-    if (progressDiv) progressDiv.classList.remove('hidden');
-    if (successDiv) successDiv.classList.add('hidden');
-    if (progressBar) progressBar.style.width = '30%';
-    if (progressPercent) progressPercent.textContent = '30%';
-
-    try {
-      // Subir archivo
-      if (progressBar) progressBar.style.width = '60%';
-      if (progressPercent) progressPercent.textContent = '60%';
-      
-      const imageUrl = await uploadFile(file, 'site');
-      
-      if (progressBar) progressBar.style.width = '100%';
-      if (progressPercent) progressPercent.textContent = '100%';
-
-      // Actualizar en la base de datos
-      const heroId = document.getElementById('hero-id')?.value;
-      if (heroId) {
-        await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
-      } else {
-        await sb.from('hero_content').insert({ background_image: imageUrl });
-      }
-
-      if (progressDiv) progressDiv.classList.add('hidden');
-      if (successDiv) {
-        successDiv.classList.remove('hidden');
-        showToast('✅ Imagen actualizada correctamente');
-        setTimeout(() => location.reload(), 1500);
-      }
-    } catch (err) {
-      if (progressDiv) progressDiv.classList.add('hidden');
-      showToast('❌ Error: ' + err.message);
-      heroFileInput.value = '';
-    }
-  });
-}
-
-// Al tocar "Eliminar"
-if (deleteBtn) {
-  deleteBtn.addEventListener('click', async () => {
-    if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
-    
-    const heroId = document.getElementById('hero-id')?.value;
-    try {
-      if (heroId) {
-        await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-      }
-      showToast('✅ Imagen eliminada');
-      setTimeout(() => location.reload(), 1000);
     } catch (err) {
       showToast('❌ Error al eliminar: ' + err.message);
     }
@@ -539,5 +527,76 @@ if (deleteBtn) {
         if (slotId) { await sb.from('gallery_images').delete().eq('id', slotId); showToast('✅ Foto eliminada'); setTimeout(() => location.reload(), 1000); }
       });
     });
+  
+    // ===== HERO IMAGEN (Lógica simple y directa) =====
+    const heroFileInput = document.getElementById('hero-image');
+    const deleteHeroBtn = document.getElementById('delete-hero-btn');
+    const heroId = document.getElementById('hero-id')?.value;
+
+    if (heroFileInput) {
+      heroFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        if (file.size > 5 * 1024 * 1024) { 
+          showToast('❌ La imagen no debe superar los 5MB'); 
+          heroFileInput.value = '';
+          return; 
+        }
+
+        const progressDiv = document.getElementById('hero-upload-progress');
+        const progressBar = document.getElementById('hero-progress-bar');
+        const progressPercent = document.getElementById('hero-progress-percent');
+        const successDiv = document.getElementById('hero-upload-success');
+        
+        if (progressDiv) progressDiv.classList.remove('hidden');
+        if (successDiv) successDiv.classList.add('hidden');
+        if (progressBar) progressBar.style.width = '30%';
+        if (progressPercent) progressPercent.textContent = '30%';
+
+        try {
+          if (progressBar) progressBar.style.width = '60%';
+          if (progressPercent) progressPercent.textContent = '60%';
+          
+          const imageUrl = await uploadFile(file, 'site');
+          
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressPercent) progressPercent.textContent = '100%';
+
+          if (heroId) {
+            await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+          } else {
+            await sb.from('hero_content').insert({ background_image: imageUrl });
+          }
+
+          if (progressDiv) progressDiv.classList.add('hidden');
+          if (successDiv) {
+            successDiv.classList.remove('hidden');
+            showToast('✅ Imagen actualizada. Recargando...');
+            setTimeout(() => location.reload(), 1500);
+          }
+        } catch (err) {
+          if (progressDiv) progressDiv.classList.add('hidden');
+          showToast('❌ Error: ' + err.message);
+          heroFileInput.value = '';
+        }
+      });
+    }
+
+    if (deleteHeroBtn) {
+      deleteHeroBtn.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
+        try {
+          if (heroId) {
+            await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+          }
+          showToast('✅ Imagen eliminada. Recargando...');
+          setTimeout(() => location.reload(), 1000);
+        } catch (err) {
+          showToast('❌ Error al eliminar: ' + err.message);
+        }
+      });
+    }
+
   </script>
 </AdminLayout>
