@@ -135,6 +135,156 @@ const hero_image = hero?.background_image || '';
 <script is:inline>
   const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
   
+  const heroId = document.getElementById('hero-id')?.value;
+  const fileInput = document.getElementById('hero-file-input');
+  const imgContainer = document.getElementById('hero-img-container');
+  const uploadBox = document.getElementById('hero-upload-box');
+  const currentImg = document.getElementById('hero-current-img');
+  const previewContainer = document.getElementById('hero-preview-container');
+  const previewImg = document.getElementById('hero-preview');
+  const progressDiv = document.getElementById('hero-progress');
+  const progressBar = document.getElementById('hero-progress-bar');
+  const progressText = document.getElementById('hero-progress-text');
+  const btnSave = document.getElementById('btn-save-hero');
+  const btnDelete = document.getElementById('btn-delete-hero');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      alert('1. Archivo seleccionado: ' + file.name + ' (' + (file.size/1024/1024).toFixed(2) + ' MB)');
+
+      if (file.size > 5 * 1024 * 1024) { 
+        alert('❌ La imagen no debe superar los 5MB'); 
+        return; 
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => { 
+        previewImg.src = ev.target.result; 
+        previewContainer.style.display = 'block'; 
+      };
+      reader.readAsDataURL(file);
+
+      progressDiv.style.display = 'block';
+      progressBar.style.width = '30%'; 
+      progressText.textContent = '30%';
+
+      try {
+        const fileName = 'img_' + Date.now() + '_' + file.name.replace(/\s/g, '_');
+        alert('2. Intentando subir al bucket: images');
+        
+        const { data: uploadData, error: upErr } = await sb.storage.from('images').upload(fileName, file);
+        
+        if (upErr) {
+          alert('❌ ERROR DE SUPABASE STORAGE: ' + upErr.message);
+          throw upErr;
+        }
+        
+        alert('3. Subida a Storage exitosa. Obteniendo URL pública...');
+        const { data: urlData } = sb.storage.from('images').getPublicUrl(fileName);
+        const publicUrl = urlData.publicUrl;
+        alert('URL Generada: ' + publicUrl);
+
+        if (heroId) {
+          alert('4. Actualizando base de datos (ID: ' + heroId + ')...');
+          const { error: dbErr } = await sb.from('hero_content').update({ background_image: publicUrl }).eq('id', heroId);
+          if (dbErr) {
+            alert('❌ ERROR DE BASE DE DATOS: ' + dbErr.message);
+            throw dbErr;
+          }
+        } else {
+          alert('4. Insertando nuevo registro en base de datos...');
+          const { error: dbErr } = await sb.from('hero_content').insert({ background_image: publicUrl, title: 'PRUEBA' });
+          if (dbErr) {
+            alert('❌ ERROR DE BASE DE DATOS: ' + dbErr.message);
+            throw dbErr;
+          }
+        }
+
+        progressBar.style.width = '100%'; 
+        progressText.textContent = '100%';
+        alert('✅ TODO PERFECTO. Imagen guardada exitosamente.');
+        
+        setTimeout(() => {
+          progressDiv.style.display = 'none';
+          previewContainer.style.display = 'none';
+        }, 1000);
+
+        if (uploadBox) uploadBox.style.display = 'none';
+        if (imgContainer) {
+          currentImg.src = publicUrl;
+          imgContainer.style.display = 'block';
+        }
+
+      } catch (err) {
+        alert('💥 ERROR FINAL DETECTADO: ' + err.message);
+        progressDiv.style.display = 'none';
+        previewContainer.style.display = 'none';
+      }
+      fileInput.value = '';
+    });
+  }
+
+  if (btnDelete) {
+    btnDelete.addEventListener('click', async () => {
+      if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
+      try {
+        if (heroId) {
+          const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+          if (error) throw error;
+        }
+        if (imgContainer) imgContainer.style.display = 'none';
+        if (uploadBox) uploadBox.style.display = 'block';
+        alert('✅ Imagen eliminada correctamente.');
+      } catch (err) {
+        alert('❌ Error al eliminar: ' + err.message);
+      }
+    });
+  }
+
+  if (btnSave) {
+    btnSave.addEventListener('click', async () => {
+      const title = document.getElementById('hero-title')?.value || '';
+      const subtitle = document.getElementById('hero-subtitle')?.value || '';
+      const cta_text = document.getElementById('hero-cta')?.value || '';
+      const cta_link = document.getElementById('hero-link')?.value || '';
+
+      btnSave.disabled = true;
+      btnSave.innerHTML = '⏳ Guardando...';
+      btnSave.style.backgroundColor = '#60a5fa';
+
+      try {
+        if (heroId) {
+          const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
+          if (error) throw error;
+        } else {
+          const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
+          if (error) throw error;
+        }
+
+        btnSave.innerHTML = '✅ Guardado';
+        btnSave.style.backgroundColor = '#22c55e';
+
+        setTimeout(() => {
+          btnSave.disabled = false;
+          btnSave.innerHTML = '💾 GUARDAR HERO (FORZADO)';
+          btnSave.style.backgroundColor = '#2563eb';
+        }, 2000);
+
+      } catch (err) {
+        alert('❌ Error al guardar textos: ' + err.message);
+        btnSave.disabled = false;
+        btnSave.innerHTML = '💾 GUARDAR HERO (FORZADO)';
+        btnSave.style.backgroundColor = '#2563eb';
+      }
+    });
+  }
+</script>
+<script is:inline>
+  const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+  
   sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
   document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
 
