@@ -54,7 +54,7 @@ const { title, description = '', activeTab = 'inicio', isHome = false } = Astro.
     <slot />
   </main>
   <Footer />
-  <BottomNav activeTab={activeTab} />
+  <BottomNav activeTab={activeTab} isAdmin={false} />
   
   <script is:inline>
     if ('serviceWorker' in navigator) {
