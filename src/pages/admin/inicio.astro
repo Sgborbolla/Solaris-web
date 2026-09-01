@@ -2,15 +2,13 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase } from '../../lib/supabase.js';
 
-// 1. Obtener datos de la sección Hero (si no existe, usa objeto vacío)
+// Si no hay datos, usa {} o [] para evitar el error "Cannot read properties of null"
 const { data: heroData } = await supabase.from('hero').select('*').single();
 const hero = heroData || {};
 
-// 2. Obtener galería (si no existe, usa array vacío para evitar el error de lectura '[0]')
 const { data: galleryData } = await supabase.from('gallery').select('*');
 const gallerySlots = galleryData || [];
 
-// 3. Obtener configuración de imagen de hero (site_settings)
 let hero_image = '';
 const { data: settingData } = await supabase.from('site_settings').select('value').eq('key', 'hero_image').single();
 if (settingData) {
@@ -144,16 +142,16 @@ if (settingData) {
       <p class="text-sm text-solaris-text mb-6">Sube 2 fotos grandes que se mostrarán en la página de inicio.</p>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="gallery-slot" data-slot="0" data-id={gallerySlots[0]?.id || ''}>
-          {gallerySlots[0] ? (
+        <div class="gallery-slot" data-slot="0" data-id={gallerySlots?.[0]?.id || ''}>
+          {gallerySlots?.[0] ? (
             <div class="relative aspect-[4/3] rounded-card overflow-hidden border-2 border-solaris-border group">
-              <img src={gallerySlots[0].image_url} alt={gallerySlots[0].title} class="w-full h-full object-cover" />
+              <img src={gallerySlots?.[0].image_url} alt={gallerySlots?.[0].title} class="w-full h-full object-cover" />
               <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <button class="replace-btn bg-white text-solaris-dark px-3 py-2 rounded text-sm font-semibold">Reemplazar</button>
                 <button class="delete-slot-btn bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold">Eliminar</button>
               </div>
               <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-3">
-                <p class="font-semibold text-sm truncate">{gallerySlots[0].title}</p>
+                <p class="font-semibold text-sm truncate">{gallerySlots?.[0].title}</p>
               </div>
             </div>
           ) : (
@@ -258,7 +256,7 @@ if (settingData) {
     let selectedLogoFile = null;
 
     logoFileInput?.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); return; }
       selectedLogoFile = file;
@@ -318,7 +316,7 @@ if (settingData) {
     let selectedHeroFile = null;
 
     heroImageInput?.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); return; }
       selectedHeroFile = file;
@@ -383,7 +381,7 @@ if (settingData) {
     let selectedVideoFile = null;
 
     videoFileInput?.addEventListener('change', (e) => {
-      const file = e.target.files[0];
+      const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 50 * 1024 * 1024) { showToast('❌ El video no debe superar los 50MB'); return; }
       selectedVideoFile = file;
@@ -421,7 +419,7 @@ if (settingData) {
     // ===== GALERÍA =====
     document.querySelectorAll('.slot-file-input').forEach(input => {
       input.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
         if (!file) return;
         if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); return; }
         const slot = input.dataset.slot;
