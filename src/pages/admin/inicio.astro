@@ -37,26 +37,29 @@ const hero_image = hero?.background_image || '';
       <h2 class="text-2xl font-bold text-solaris-dark mb-4">🎯 Sección Hero (Foto grande principal)</h2>
       <p class="text-sm text-solaris-text mb-6">Edita la imagen de fondo y el texto que aparece sobre ella.</p>
       
-      <form id="hero-form" class="space-y-6">
+      <form id="hero-form" class="space-y-6" onsubmit="return false;">
   <input type="hidden" id="hero-id" value={hero?.id || ''} />
 
   <!-- SECCIÓN DE IMAGEN -->
   <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
-    <label class="block text-sm font-semibold mb-2"> Imagen de Fondo del Hero</label>
-    
-    {hero?.background_image ? (
-      <div class="space-y-3">
-        <img src={hero.background_image} alt="Fondo actual" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-        <div class="flex gap-2">
-          <label for="hero-image" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform text-center cursor-pointer">
-            🔄 Reemplazar
-            <input type="file" id="hero-image" accept="image/*" class="hidden" />
-          </label>
-          <button type="button" id="delete-hero-btn" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🗑️ Eliminar</button>
-        </div>
+    <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
+
+    <!-- Estado 1: Cuando SÍ hay imagen -->
+    <div id="hero-img-present" class={hero?.background_image ? '' : 'hidden'}>
+      <img id="hero-current-img" src={hero?.background_image || ''} class="w-full h-48 object-cover rounded-card border border-solaris-border mb-3" />
+      <div class="flex gap-2">
+        <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform text-center cursor-pointer">
+          🔄 Reemplazar
+        </label>
+        <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">
+          🗑️ Eliminar
+        </button>
       </div>
-    ) : (
-      <label for="hero-image" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
+    </div>
+
+    <!-- Estado 2: Cuando NO hay imagen (Cuadro en blanco) -->
+    <div id="hero-img-absent" class={hero?.background_image ? 'hidden' : ''}>
+      <label for="hero-file-input" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
         <div class="flex flex-col items-center justify-center p-6">
           <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -64,22 +67,20 @@ const hero_image = hero?.background_image || '';
           <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
           <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
         </div>
-        <input type="file" id="hero-image" accept="image/*" class="hidden" />
       </label>
-    )}
-
-    <div id="hero-preview-container" class="mt-3 hidden">
-      <p class="text-xs text-solaris-text mb-1">Vista previa:</p>
-      <img id="hero-preview" src="" alt="Preview" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
     </div>
 
-    <div id="hero-upload-progress" class="hidden mt-3">
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-xs text-solaris-text">Subiendo...</span>
-        <span id="hero-progress-percent" class="text-xs font-semibold text-solaris-primary">0%</span>
+    <!-- Input de archivo único y oculto -->
+    <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
+
+    <!-- Barra de progreso -->
+    <div id="hero-progress" class="hidden mt-4">
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-solaris-text font-semibold">Subiendo imagen...</span>
+        <span id="hero-progress-text" class="text-solaris-primary font-bold">0%</span>
       </div>
-      <div class="w-full bg-solaris-gray rounded-full h-2">
-        <div id="hero-progress-bar" class="bg-solaris-primary h-2 rounded-full transition-all" style="width: 0%"></div>
+      <div class="w-full bg-solaris-gray rounded-full h-2.5">
+        <div id="hero-progress-bar" class="bg-solaris-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
       </div>
     </div>
   </div>
@@ -106,10 +107,10 @@ const hero_image = hero?.background_image || '';
     </div>
   </div>
 
-  <!-- BOTÓN GUARDAR TEXTOS (Fuera de los inputs, al final) -->
+  <!-- BOTÓN GUARDAR ÚNICO -->
   <div class="pt-4 border-t border-solaris-border">
-    <button type="button" id="btn-save-texts" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg">
-      💾 Guardar Cambios de Texto
+    <button type="button" id="btn-save-hero" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg flex items-center justify-center gap-2">
+      💾 Guardar Hero
     </button>
   </div>
 </form>
@@ -225,6 +226,7 @@ const hero_image = hero?.background_image || '';
   <div id="toast" class="hidden fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-card shadow-lg z-50"></div>
 
   
+
 <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script is:inline>
   const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
@@ -232,135 +234,118 @@ const hero_image = hero?.background_image || '';
   sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
   document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
 
-  function showToast(msg) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'toast';
-      toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-solaris-dark text-white px-6 py-3 rounded-lg shadow-lg z-[100] transition-opacity duration-300 opacity-0';
-      document.body.appendChild(toast);
+  const heroId = document.getElementById('hero-id')?.value;
+  const fileInput = document.getElementById('hero-file-input');
+  const imgPresent = document.getElementById('hero-img-present');
+  const imgAbsent = document.getElementById('hero-img-absent');
+  const currentImg = document.getElementById('hero-current-img');
+  const progressDiv = document.getElementById('hero-progress');
+  const progressBar = document.getElementById('hero-progress-bar');
+  const progressText = document.getElementById('hero-progress-text');
+  const btnSave = document.getElementById('btn-save-hero');
+
+  // 1. SUBIR / REEMPLAZAR IMAGEN
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
+
+    progressDiv.classList.remove('hidden');
+    progressBar.style.width = '30%'; progressText.textContent = '30%';
+
+    try {
+      const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+      const { error: upErr } = await sb.storage.from('site').upload(fileName, file);
+      if (upErr) throw upErr;
+
+      progressBar.style.width = '70%'; progressText.textContent = '70%';
+      const { data: urlData } = sb.storage.from('site').getPublicUrl(fileName);
+      const publicUrl = urlData.publicUrl;
+
+      if (heroId) {
+        const { error: dbErr } = await sb.from('hero_content').update({ background_image: publicUrl }).eq('id', heroId);
+        if (dbErr) throw dbErr;
+      } else {
+        const { error: dbErr } = await sb.from('hero_content').insert({ background_image: publicUrl, title: 'ENERGÍA PARA TU FUTURO' });
+        if (dbErr) throw dbErr;
+      }
+
+      progressBar.style.width = '100%'; progressText.textContent = '100%';
+      setTimeout(() => progressDiv.classList.add('hidden'), 1000);
+
+      // Actualizar la pantalla al instante
+      currentImg.src = publicUrl;
+      imgPresent.classList.remove('hidden');
+      imgAbsent.classList.add('hidden');
+      alert('✅ Imagen actualizada correctamente');
+
+    } catch (err) {
+      alert('❌ Error al subir: ' + err.message);
+      progressDiv.classList.add('hidden');
     }
-    toast.textContent = msg;
-    toast.style.opacity = '1';
-    setTimeout(() => toast.style.opacity = '0', 3000);
-  }
+    fileInput.value = '';
+  });
 
-  async function uploadFile(file, bucket) {
-    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    const { data, error } = await sb.storage.from(bucket).upload(fileName, file);
-    if (error) throw new Error('Storage: ' + error.message);
-    const { data: urlData } = sb.storage.from(bucket).getPublicUrl(fileName);
-    return urlData.publicUrl;
-  }
+  // 2. ELIMINAR IMAGEN (Ahora sí desaparece de la pantalla)
+  document.getElementById('btn-delete-hero').addEventListener('click', async () => {
+    if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
+    try {
+      if (heroId) {
+        const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+        if (error) throw error;
+      }
+      // Ocultar imagen y mostrar cuadro en blanco al instante
+      currentImg.src = '';
+      imgPresent.classList.add('hidden');
+      imgAbsent.classList.remove('hidden');
+      alert('✅ Imagen eliminada. El espacio está listo para una nueva foto.');
+    } catch (err) {
+      alert(' Error al eliminar: ' + err.message);
+    }
+  });
 
-  const heroIdInput = document.getElementById('hero-id');
-  const heroId = heroIdInput ? heroIdInput.value : null;
+  // 3. GUARDAR TEXTOS (Con la animación que te gusta)
+  btnSave.addEventListener('click', async () => {
+    const title = document.getElementById('hero-title').value;
+    const subtitle = document.getElementById('hero-subtitle').value;
+    const cta_text = document.getElementById('hero-cta').value;
+    const cta_link = document.getElementById('hero-link').value;
 
-  // 1. LÓGICA DE SUBIR/REEMPLAZAR IMAGEN
-  const heroFileInput = document.getElementById('hero-image');
-  const previewContainer = document.getElementById('hero-preview-container');
-  const previewImg = document.getElementById('hero-preview');
+    // Fase 1: Guardando
+    btnSave.disabled = true;
+    btnSave.innerHTML = '⏳ Guardando...';
+    btnSave.classList.remove('bg-solaris-primary');
+    btnSave.classList.add('bg-blue-400', 'opacity-75');
 
-  if (heroFileInput) {
-    heroFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
-
-      // Mostrar vista previa inmediatamente
-      if (previewImg && previewContainer) {
-        const reader = new FileReader();
-        reader.onload = (ev) => { previewImg.src = ev.target.result; previewContainer.classList.remove('hidden'); };
-        reader.readAsDataURL(file);
+    try {
+      if (heroId) {
+        const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
+        if (error) throw error;
       }
 
-      const progressDiv = document.getElementById('hero-upload-progress');
-      const progressBar = document.getElementById('hero-progress-bar');
-      const progressPercent = document.getElementById('hero-progress-percent');
+      // Fase 2: Guardado (Éxito)
+      btnSave.innerHTML = '✅ Guardado';
+      btnSave.classList.remove('bg-blue-400', 'opacity-75');
+      btnSave.classList.add('bg-green-500');
 
-      if (progressDiv) progressDiv.classList.remove('hidden');
-      if (progressBar) progressBar.style.width = '30%';
-      if (progressPercent) progressPercent.textContent = '30%';
+      // Fase 3: Volver al estado original
+      setTimeout(() => {
+        btnSave.disabled = false;
+        btnSave.innerHTML = '💾 Guardar Hero';
+        btnSave.classList.remove('bg-green-500');
+        btnSave.classList.add('bg-solaris-primary');
+      }, 2000);
 
-      try {
-        if (progressBar) progressBar.style.width = '60%';
-        if (progressPercent) progressPercent.textContent = '60%';
-        
-        const imageUrl = await uploadFile(file, 'site');
-        
-        if (progressBar) progressBar.style.width = '90%';
-        if (progressPercent) progressPercent.textContent = '90%';
-
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
-          if (error) throw error;
-        } else {
-          const { error } = await sb.from('hero_content').insert({ background_image: imageUrl });
-          if (error) throw error;
-        }
-
-        if (progressDiv) progressDiv.classList.add('hidden');
-        showToast('✅ Imagen actualizada. Recargando...');
-        setTimeout(() => location.reload(), 1000);
-        
-      } catch (err) {
-        if (progressDiv) progressDiv.classList.add('hidden');
-        alert('❌ Error al subir: ' + err.message);
-      }
-    });
-  }
-
-  // 2. LÓGICA DE ELIMINAR IMAGEN
-  const deleteHeroBtn = document.getElementById('delete-hero-btn');
-  if (deleteHeroBtn) {
-    deleteHeroBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
-      
-      try {
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          if (error) throw error;
-        }
-        showToast('✅ Imagen eliminada. Recargando...');
-        setTimeout(() => location.reload(), 1000);
-      } catch (err) {
-        alert('❌ Error al eliminar: ' + err.message);
-      }
-    });
-  }
-
-  // 3. LÓGICA DE GUARDAR TEXTOS
-  const saveTextsBtn = document.getElementById('btn-save-texts');
-  if (saveTextsBtn) {
-    saveTextsBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      
-      const title = document.getElementById('hero-title')?.value || '';
-      const subtitle = document.getElementById('hero-subtitle')?.value || '';
-      const cta_text = document.getElementById('hero-cta')?.value || '';
-      const cta_link = document.getElementById('hero-link')?.value || '';
-
-      saveTextsBtn.disabled = true;
-      saveTextsBtn.textContent = 'Guardando...';
-
-      try {
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
-          if (error) throw error;
-        } else {
-          const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
-          if (error) throw error;
-        }
-        showToast('✅ Textos guardados correctamente');
-        setTimeout(() => location.reload(), 1000);
-      } catch (err) {
-        alert('❌ Error al guardar: ' + err.message);
-      } finally {
-        saveTextsBtn.disabled = false;
-        saveTextsBtn.textContent = '💾 Guardar Cambios de Texto';
-      }
-    });
-  }
+    } catch (err) {
+      alert('❌ Error al guardar: ' + err.message);
+      btnSave.disabled = false;
+      btnSave.innerHTML = '💾 Guardar Hero';
+      btnSave.classList.remove('bg-blue-400', 'opacity-75', 'bg-green-500');
+      btnSave.classList.add('bg-solaris-primary');
+    }
+  });
 </script>
 </AdminLayout>
