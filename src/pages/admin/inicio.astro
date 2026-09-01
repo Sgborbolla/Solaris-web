@@ -37,7 +37,7 @@ gallery?.forEach((img, i) => { if (i < 2) gallerySlots[i] = img; });
     <h2 class="text-xl font-bold text-solaris-dark mb-4">🎨 Hero Principal</h2>
     <p class="text-solaris-text text-sm mb-4">Imagen principal que aparece en la página de inicio.</p>
     
-    {hero_image and (
+    {hero_image && (
       <div class="mb-4">
         <img src={hero_image} alt="Hero actual" class="w-full h-64 object-cover rounded-lg mb-3" />
       </div>
@@ -56,7 +56,7 @@ gallery?.forEach((img, i) => { if (i < 2) gallerySlots[i] = img; });
           {hero_image ? 'Reemplazar Imagen' : 'Subir Imagen'}
         </button>
         
-        {hero_image and (
+        {hero_image && (
           <button type="submit" name="action" value="delete_hero" class="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors" onclick="return confirm('¿Seguro que deseas eliminar la imagen del hero?')">
             Eliminar Imagen
           </button>
