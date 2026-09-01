@@ -40,51 +40,34 @@ const hero_image = hero?.background_image || '';
       <form id="hero-form" class="space-y-6" onsubmit="return false;">
   <input type="hidden" id="hero-id" value={hero?.id || ''} />
 
-  <!-- SECCIÓN DE IMAGEN -->
   <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
     <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
 
-    
-    <!-- SECCIÓN DE IMAGEN (VERSIÓN FORZADA PARA DIAGNÓSTICO) -->
-    <div class="bg-blue-50 border border-blue-200 rounded-card p-4" style="display: block !important;">
-      <label class="block text-sm font-semibold mb-2" style="display: block !important;">📸 Imagen de Fondo del Hero</label>
-      
-      <!-- Contenedor de imagen actual (Siempre visible para probar) -->
-      <div id="hero-img-container" class="space-y-3" style="display: block !important; margin-bottom: 1rem;">
-        <img id="hero-current-img" src={hero?.background_image || 'https://via.placeholder.com/400x200?text=Sin+Imagen'} class="w-full h-48 object-cover rounded-card border border-solaris-border" style="display: block !important;" />
-        <div class="flex gap-2" style="display: flex !important;">
-          <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm text-center cursor-pointer" style="display: block !important; background-color: #ffffff !important;">
+    {hero?.background_image ? (
+      <div class="space-y-3">
+        <img id="hero-current-img" src={hero.background_image} class="w-full h-48 object-cover rounded-card border border-solaris-border" />
+        <div class="flex gap-2">
+          <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm text-center cursor-pointer">
             🔄 Reemplazar
           </label>
-          <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm" style="display: block !important; background-color: #ef4444 !important; color: white !important;">
+          <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm">
             🗑️ Eliminar
           </button>
         </div>
       </div>
-
-      <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
-
-      <!-- Vista Previa y Barra de Progreso (Forzadas a ser visibles) -->
-      <div id="hero-preview-container" class="mt-3" style="display: block !important; border: 2px dashed green; padding: 10px;">
-        <p class="text-xs text-green-700 mb-1 font-semibold">VISTA PREVIA (Forzada):</p>
-        <img id="hero-preview" src="" class="w-full h-48 object-cover rounded-card border-2 border-green-500" style="display: block !important; min-height: 50px; background: #f0fdf4;" />
-      </div>
-
-      <div id="hero-progress" class="mt-3" style="display: block !important; border: 2px dashed blue; padding: 10px;">
-        <div class="flex justify-between text-xs mb-1">
-          <span class="text-blue-700 font-semibold">BARRA DE PROGRESO (Forzada):</span>
-          <span id="hero-progress-text" class="text-blue-700 font-bold">0%</span>
+    ) : (
+      <label for="hero-file-input" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
+        <div class="flex flex-col items-center justify-center p-6">
+          <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-4" style="background-color: #e5e7eb !important;">
-          <div id="hero-progress-bar" class="bg-blue-500 h-4 rounded-full transition-all duration-300" style="width: 30%; background-color: #3b82f6 !important;"></div>
-        </div>
-      </div>
-    </div>
-
+      </label>
+    )}
 
     <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
 
-    <!-- Vista Previa y Barra de Progreso -->
     <div id="hero-preview-container" class="mt-3 hidden">
       <p class="text-xs text-solaris-text mb-1 font-semibold">Vista previa:</p>
       <img id="hero-preview" src="" class="w-full h-48 object-cover rounded-card border-2 border-solaris-primary" />
@@ -101,7 +84,6 @@ const hero_image = hero?.background_image || '';
     </div>
   </div>
 
-  <!-- SECCIÓN DE TEXTOS -->
   <div class="space-y-4">
     <div>
       <label class="block text-sm font-semibold mb-2">Título Principal</label>
@@ -123,13 +105,13 @@ const hero_image = hero?.background_image || '';
     </div>
   </div>
 
-  <!-- BOTÓN GUARDAR ÚNICO CON ANIMACIÓN -->
   <div class="pt-4 border-t border-solaris-border">
-    <button type="button" id="btn-save-hero" class="w-full text-white font-bold py-4 rounded-lg shadow-lg text-lg flex items-center justify-center gap-2" style="display: flex !important; background-color: #2563eb !important; color: white !important; margin-top: 20px; padding: 16px;">
-      💾 GUARDAR HERO (FORZADO)
+    <button type="button" id="btn-save-hero" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg flex items-center justify-center gap-2">
+      💾 Guardar Hero
     </button>
   </div>
 </form>
+
 
 <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script is:inline>
@@ -153,97 +135,81 @@ const hero_image = hero?.background_image || '';
       const file = e.target.files[0];
       if (!file) return;
       
-      alert('1. Archivo seleccionado: ' + file.name + ' (' + (file.size/1024/1024).toFixed(2) + ' MB)');
+      alert('1. Archivo selec<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script is:inline>
+  const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+  
+  const heroId = document.getElementById('hero-id')?.value;
+  const fileInput = document.getElementById('hero-file-input');
+  const previewContainer = document.getElementById('hero-preview-container');
+  const previewImg = document.getElementById('hero-preview');
+  const progressDiv = document.getElementById('hero-progress');
+  const progressBar = document.getElementById('hero-progress-bar');
+  const progressText = document.getElementById('hero-progress-text');
+  const btnSave = document.getElementById('btn-save-hero');
+  const btnDelete = document.getElementById('btn-delete-hero');
 
-      if (file.size > 5 * 1024 * 1024) { 
-        alert('❌ La imagen no debe superar los 5MB'); 
-        return; 
-      }
+  // 1. SUBIR IMAGEN
+  if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
 
       const reader = new FileReader();
-      reader.onload = (ev) => { 
-        previewImg.src = ev.target.result; 
-        previewContainer.style.display = 'block'; 
-      };
+      reader.onload = (ev) => { previewImg.src = ev.target.result; previewContainer.classList.remove('hidden'); };
       reader.readAsDataURL(file);
 
-      progressDiv.style.display = 'block';
-      progressBar.style.width = '30%'; 
-      progressText.textContent = '30%';
+      progressDiv.classList.remove('hidden');
+      progressBar.style.width = '30%'; progressText.textContent = '30%';
 
       try {
         const fileName = 'img_' + Date.now() + '_' + file.name.replace(/\s/g, '_');
-        alert('2. Intentando subir al bucket: images');
-        
-        const { data: uploadData, error: upErr } = await sb.storage.from('images').upload(fileName, file);
-        
-        if (upErr) {
-          alert('❌ ERROR DE SUPABASE STORAGE: ' + upErr.message);
-          throw upErr;
-        }
-        
-        alert('3. Subida a Storage exitosa. Obteniendo URL pública...');
+        const { error: upErr } = await sb.storage.from('images').upload(fileName, file);
+        if (upErr) throw new Error('Storage: ' + upErr.message);
+
+        progressBar.style.width = '70%'; progressText.textContent = '70%';
         const { data: urlData } = sb.storage.from('images').getPublicUrl(fileName);
-        const publicUrl = urlData.publicUrl;
-        alert('URL Generada: ' + publicUrl);
-
-        if (heroId) {
-          alert('4. Actualizando base de datos (ID: ' + heroId + ')...');
-          const { error: dbErr } = await sb.from('hero_content').update({ background_image: publicUrl }).eq('id', heroId);
-          if (dbErr) {
-            alert('❌ ERROR DE BASE DE DATOS: ' + dbErr.message);
-            throw dbErr;
-          }
-        } else {
-          alert('4. Insertando nuevo registro en base de datos...');
-          const { error: dbErr } = await sb.from('hero_content').insert({ background_image: publicUrl, title: 'PRUEBA' });
-          if (dbErr) {
-            alert('❌ ERROR DE BASE DE DATOS: ' + dbErr.message);
-            throw dbErr;
-          }
-        }
-
-        progressBar.style.width = '100%'; 
-        progressText.textContent = '100%';
-        alert('✅ TODO PERFECTO. Imagen guardada exitosamente.');
         
-        setTimeout(() => {
-          progressDiv.style.display = 'none';
-          previewContainer.style.display = 'none';
-        }, 1000);
-
-        if (uploadBox) uploadBox.style.display = 'none';
-        if (imgContainer) {
-          currentImg.src = publicUrl;
-          imgContainer.style.display = 'block';
+        if (heroId) {
+          const { error: dbErr } = await sb.from('hero_content').update({ background_image: urlData.publicUrl }).eq('id', heroId);
+          if (dbErr) throw new Error('DB: ' + dbErr.message);
+        } else {
+          const { error: dbErr } = await sb.from('hero_content').insert({ background_image: urlData.publicUrl, title: 'ENERGÍA PARA TU FUTURO' });
+          if (dbErr) throw new Error('DB: ' + dbErr.message);
         }
+
+        progressBar.style.width = '100%'; progressText.textContent = '100%';
+        alert('✅ Imagen guardada correctamente. La página se recargará para mostrar los cambios.');
+        setTimeout(() => location.reload(), 500);
 
       } catch (err) {
-        alert('💥 ERROR FINAL DETECTADO: ' + err.message);
-        progressDiv.style.display = 'none';
-        previewContainer.style.display = 'none';
+        alert('❌ Error: ' + err.message);
+        progressDiv.classList.add('hidden');
+        previewContainer.classList.add('hidden');
       }
       fileInput.value = '';
     });
   }
 
+  // 2. ELIMINAR IMAGEN
   if (btnDelete) {
     btnDelete.addEventListener('click', async () => {
       if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
       try {
         if (heroId) {
           const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          if (error) throw error;
+          if (error) throw new Error('DB: ' + error.message);
         }
-        if (imgContainer) imgContainer.style.display = 'none';
-        if (uploadBox) uploadBox.style.display = 'block';
-        alert('✅ Imagen eliminada correctamente.');
+        alert('✅ Imagen eliminada correctamente. La página se recargará.');
+        setTimeout(() => location.reload(), 500);
       } catch (err) {
         alert('❌ Error al eliminar: ' + err.message);
       }
     });
   }
 
+  // 3. GUARDAR TEXTOS
   if (btnSave) {
     btnSave.addEventListener('click', async () => {
       const title = document.getElementById('hero-title')?.value || '';
@@ -258,165 +224,27 @@ const hero_image = hero?.background_image || '';
       try {
         if (heroId) {
           const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
-          if (error) throw error;
+          if (error) throw new Error('DB: ' + error.message);
         } else {
           const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
-          if (error) throw error;
+          if (error) throw new Error('DB: ' + error.message);
         }
 
         btnSave.innerHTML = '✅ Guardado';
         btnSave.style.backgroundColor = '#22c55e';
-
+        
         setTimeout(() => {
-          btnSave.disabled = false;
-          btnSave.innerHTML = '💾 GUARDAR HERO (FORZADO)';
-          btnSave.style.backgroundColor = '#2563eb';
-        }, 2000);
+          alert('✅ Textos guardados correctamente.');
+          location.reload();
+        }, 800);
 
       } catch (err) {
-        alert('❌ Error al guardar textos: ' + err.message);
+        alert('❌ Error al guardar: ' + err.message);
         btnSave.disabled = false;
-        btnSave.innerHTML = '💾 GUARDAR HERO (FORZADO)';
+        btnSave.innerHTML = '💾 Guardar Hero';
         btnSave.style.backgroundColor = '#2563eb';
       }
     });
   }
-</script>
-<script is:inline>
-  const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
-  
-  sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
-  document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
-
-  const heroId = document.getElementById('hero-id')?.value;
-  const fileInput = document.getElementById('hero-file-input');
-  const imgContainer = document.getElementById('hero-img-container');
-  const uploadBox = document.getElementById('hero-upload-box');
-  const currentImg = document.getElementById('hero-current-img');
-  const previewContainer = document.getElementById('hero-preview-container');
-  const previewImg = document.getElementById('hero-preview');
-  const progressDiv = document.getElementById('hero-progress');
-  const progressBar = document.getElementById('hero-progress-bar');
-  const progressText = document.getElementById('hero-progress-text');
-  const btnSave = document.getElementById('btn-save-hero');
-
-  // 1. SUBIR / REEMPLAZAR IMAGEN (Con vista previa)
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
-
-    // Mostrar vista previa inmediatamente
-    const reader = new FileReader();
-    reader.onload = (ev) => { 
-      previewImg.src = ev.target.result; 
-      previewContainer.classList.remove('hidden'); 
-    };
-    reader.readAsDataURL(file);
-
-    progressDiv.classList.remove('hidden');
-    progressBar.style.width = '30%'; progressText.textContent = '30%';
-
-    try {
-      const fileName = `site_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-      const { error: upErr } = await sb.storage.from('images').upload(fileName, file);
-      if (upErr) throw upErr;
-
-      progressBar.style.width = '70%'; progressText.textContent = '70%';
-      const { data: urlData } = sb.storage.from('images').getPublicUrl(fileName);
-      const publicUrl = urlData.publicUrl;
-
-      if (heroId) {
-        const { error: dbErr } = await sb.from('hero_content').update({ background_image: publicUrl }).eq('id', heroId);
-        if (dbErr) throw dbErr;
-      } else {
-        const { error: dbErr } = await sb.from('hero_content').insert({ background_image: publicUrl, title: 'ENERGÍA PARA TU FUTURO' });
-        if (dbErr) throw dbErr;
-      }
-
-      progressBar.style.width = '100%'; progressText.textContent = '100%';
-      setTimeout(() => {
-        progressDiv.classList.add('hidden');
-        previewContainer.classList.add('hidden');
-      }, 1000);
-
-      // Actualizar la pantalla al instante
-      if (uploadBox) uploadBox.classList.add('hidden');
-      if (imgContainer) {
-        currentImg.src = publicUrl;
-        imgContainer.classList.remove('hidden');
-      } else {
-        location.reload();
-      }
-      alert('✅ Imagen actualizada correctamente');
-
-    } catch (err) {
-      alert('❌ Error al subir: ' + err.message);
-      progressDiv.classList.add('hidden');
-      previewContainer.classList.add('hidden');
-    }
-    fileInput.value = '';
-  });
-
-  // 2. ELIMINAR IMAGEN (Desaparece al instante y muestra el cuadro en blanco)
-  document.getElementById('btn-delete-hero').addEventListener('click', async () => {
-    if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
-    try {
-      if (heroId) {
-        const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-        if (error) throw error;
-      }
-      // Ocultar imagen y mostrar cuadro en blanco al instante
-      if (imgContainer) imgContainer.classList.add('hidden');
-      if (uploadBox) uploadBox.classList.remove('hidden');
-      alert('✅ Imagen eliminada. El espacio está listo para una nueva foto.');
-    } catch (err) {
-      alert('❌ Error al eliminar: ' + err.message);
-    }
-  });
-
-  // 3. GUARDAR HERO (Con la animación de 3 fases que te gustó)
-  btnSave.addEventListener('click', async () => {
-    const title = document.getElementById('hero-title').value;
-    const subtitle = document.getElementById('hero-subtitle').value;
-    const cta_text = document.getElementById('hero-cta').value;
-    const cta_link = document.getElementById('hero-link').value;
-
-    // Fase 1: Guardando
-    btnSave.disabled = true;
-    btnSave.innerHTML = '⏳ Guardando...';
-    btnSave.classList.remove('bg-solaris-primary');
-    btnSave.classList.add('bg-blue-400', 'opacity-75');
-
-    try {
-      if (heroId) {
-        const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
-        if (error) throw error;
-      } else {
-        const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
-        if (error) throw error;
-      }
-
-      // Fase 2: Guardado (Éxito)
-      btnSave.innerHTML = '✅ Guardado';
-      btnSave.classList.remove('bg-blue-400', 'opacity-75');
-      btnSave.classList.add('bg-green-500');
-
-      // Fase 3: Volver al estado original
-      setTimeout(() => {
-        btnSave.disabled = false;
-        btnSave.innerHTML = '💾 Guardar Hero';
-        btnSave.classList.remove('bg-green-500');
-        btnSave.classList.add('bg-solaris-primary');
-      }, 2000);
-
-    } catch (err) {
-      alert('❌ Error al guardar: ' + err.message);
-      btnSave.disabled = false;
-      btnSave.innerHTML = '💾 Guardar Hero';
-      btnSave.classList.remove('bg-blue-400', 'opacity-75', 'bg-green-500');
-      btnSave.classList.add('bg-solaris-primary');
-    }
-  });
 </script>
 </AdminLayout>
