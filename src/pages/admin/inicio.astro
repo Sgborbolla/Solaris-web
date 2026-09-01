@@ -217,386 +217,140 @@ const hero_image = hero?.background_image || '';
 
   <div id="toast" class="hidden fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-card shadow-lg z-50"></div>
 
-  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    // ===== HERO IMAGEN (Lógica simple y directa) =====
-    const heroFileInput = document.getElementById('hero-image');
-    const deleteHeroBtn = document.getElementById('delete-hero-btn');
-    const heroId = document.getElementById('hero-id')?.value;
-
-    if (heroFileInput) {
-      heroFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        
-        if (file.size > 5 * 1024 * 1024) { 
-          showToast('❌ La imagen no debe superar los 5MB'); 
-          heroFileInput.value = '';
-          return; 
-        }
-
-        const progressDiv = document.getElementById('hero-upload-progress');
-        const progressBar = document.getElementById('hero-progress-bar');
-        const progressPercent = document.getElementById('hero-progress-percent');
-        const successDiv = document.getElementById('hero-upload-success');
-        
-        if (progressDiv) progressDiv.classList.remove('hidden');
-        if (successDiv) successDiv.classList.add('hidden');
-        if (progressBar) progressBar.style.width = '30%';
-        if (progressPercent) progressPercent.textContent = '30%';
-
-        try {
-          if (progressBar) progressBar.style.width = '60%';
-          if (progressPercent) progressPercent.textContent = '60%';
-          
-          const imageUrl = await uploadFile(file, 'site');
-          
-          if (progressBar) progressBar.style.width = '100%';
-          if (progressPercent) progressPercent.textContent = '100%';
-
-          if (heroId) {
-            await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
-          } else {
-            await sb.from('hero_content').insert({ background_image: imageUrl });
-          }
-
-          if (progressDiv) progressDiv.classList.add('hidden');
-          if (successDiv) {
-            successDiv.classList.remove('hidden');
-            showToast('✅ Imagen actualizada. Recargando...');
-            setTimeout(() => location.reload(), 1500);
-          }
-        } catch (err) {
-          if (progressDiv) progressDiv.classList.add('hidden');
-          showToast('❌ Error: ' + err.message);
-          heroFileInput.value = '';
-        }
-      });
-    }
-
-    if (deleteHeroBtn) {
-      deleteHeroBtn.addEventListener('click', async () => {
-        if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
-        try {
-          if (heroId) {
-            await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          }
-          showToast('✅ Imagen eliminada. Recargando...');
-          setTimeout(() => location.reload(), 1000);
-        } catch (err) {
-          showToast('❌ Error al eliminar: ' + err.message);
-        }
-      });
-    }
-
-  </script>
-  <script is:inline>
-    const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
-    sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
-    document.getElementById('logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
-
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3000);
-    }
-
-    async function uploadFile(file, bucket) {
-      const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-      const { error } = await sb.storage.from(bucket).upload(fileName, file);
-      if (error) throw error;
-      const { data } = sb.storage.from(bucket).getPublicUrl(fileName);
-      return data.publicUrl;
-    }
-
-    async function updateSetting(key, value) {
-      await sb.from('site_settings').update({ value }).eq('key', key);
-    }
-
-    // ===== LOGO =====
-    const logoFileInput = document.getElementById('logo-file');
-    const logoPreviewContainer = document.getElementById('logo-preview-container');
-    const logoPreview = document.getElementById('logo-preview');
-    const logoProgress = document.getElementById('logo-upload-progress');
-    const logoProgressBar = document.getElementById('logo-progress-bar');
-    const logoProgressPercent = document.getElementById('logo-progress-percent');
-    const logoSuccess = document.getElementById('logo-upload-success');
-    let selectedLogoFile = null;
-
-    logoFileInput?.addEventListener('change', (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); return; }
-      selectedLogoFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => { logoPreview.src = e.target.result; logoPreviewContainer.classList.remove('hidden'); };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById('remove-logo-preview')?.addEventListener('click', () => {
-      selectedLogoFile = null; logoFileInput.value = ''; logoPreviewContainer.classList.add('hidden');
-    });
-
-    document.getElementById('replace-logo-btn')?.addEventListener('click', () => logoFileInput.click());
-
-    document.getElementById('delete-logo-btn')?.addEventListener('click', async () => {
-      if (!confirm('¿Eliminar el logo actual?')) return;
-      await updateSetting('site_logo', '');
-      showToast('✅ Logo eliminado');
-      setTimeout(() => location.reload(), 1000);
-    });
-
-    document.getElementById('logo-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      const originalText = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Guardando...';
-      try {
-        if (selectedLogoFile) {
-          logoProgress.classList.remove('hidden');
-          logoSuccess.classList.add('hidden');
-          logoProgressBar.style.width = '30%';
-          logoProgressPercent.textContent = '30%';
-          const url = await uploadFile(selectedLogoFile, 'site');
-          await updateSetting('site_logo', url);
-          logoProgressBar.style.width = '100%';
-          logoProgressPercent.textContent = '100%';
-        }
-        logoProgress.classList.add('hidden');
-        logoSuccess.classList.remove('hidden');
-        showToast('✅ Logo actualizado');
-        setTimeout(() => location.reload(), 1500);
-      } catch (err) {
-        showToast('❌ ' + err.message);
-        logoProgress.classList.add('hidden');
-        btn.disabled = false; btn.textContent = originalText;
-      }
-    });
-
-    // ===== HERO =====
-    const heroImageInput = document.getElementById('hero-image');
-    const heroPreviewContainer = document.getElementById('hero-preview-container');
-    const heroPreview = document.getElementById('hero-preview');
-    const heroProgress = document.getElementById('hero-upload-progress');
-    const heroProgressBar = document.getElementById('hero-progress-bar');
-    const heroProgressPercent = document.getElementById('hero-progress-percent');
-    const heroSuccess = document.getElementById('hero-upload-success');
-    let selectedHeroFile = null;
-
-    heroImageInput?.addEventListener('change', (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); return; }
-      selectedHeroFile = file;
-      const reader = new FileReader();
-      reader.onload = (e) => { heroPreview.src = e.target.result; heroPreviewContainer.classList.remove('hidden'); };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById('remove-hero-preview')?.addEventListener('click', () => {
-      selectedHeroFile = null; heroImageInput.value = ''; heroPreviewContainer.classList.add('hidden');
-    });
-
-    
-    } catch (err) {
-      showToast('❌ Error al eliminar: ' + err.message);
-    }
+  
+<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script is:inline>
+  // 1. Inicializar Supabase
+  const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
+  
+  // Verificar sesión
+  sb.auth.getSession().then(({ data }) => { 
+    if (!data.session) window.location.href = '/admin/login'; 
   });
-}
-    });
+  
+  document.getElementById('logout-btn')?.addEventListener('click', async () => { 
+    await sb.auth.signOut(); 
+    window.location.href = '/admin/login'; 
+  });
 
-    document.getElementById('hero-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      const originalText = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Guardando...';
-      try {
-        const id = document.getElementById('hero-id').value;
-        const data = {
-          title: document.getElementById('hero-title').value,
-          subtitle: document.getElementById('hero-subtitle').value,
-          cta_text: document.getElementById('hero-cta').value,
-          cta_link: document.getElementById('hero-link').value
-        };
-        if (selectedHeroFile) {
-          heroProgress.classList.remove('hidden');
-          heroSuccess.classList.add('hidden');
-          heroProgressBar.style.width = '30%';
-          heroProgressPercent.textContent = '30%';
-          data.background_image = await uploadFile(selectedHeroFile, 'site');
-          heroProgressBar.style.width = '100%';
-          heroProgressPercent.textContent = '100%';
-        }
-        if (id) await sb.from('hero_content').update(data).eq('id', id);
-        else await sb.from('hero_content').insert(data);
-        heroProgress.classList.add('hidden');
-        heroSuccess.classList.remove('hidden');
-        showToast('✅ Hero actualizado');
-        setTimeout(() => location.reload(), 1500);
-      } catch (err) {
-        showToast('❌ ' + err.message);
-        heroProgress.classList.add('hidden');
-        btn.disabled = false; btn.textContent = originalText;
-      }
-    });
+  // 2. Función Toast
+  function showToast(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'toast';
+      toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-solaris-dark text-white px-6 py-3 rounded-lg shadow-lg z-[100] transition-opacity duration-300 opacity-0';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    setTimeout(() => toast.style.opacity = '0', 3000);
+  }
 
-    // ===== VIDEO =====
-    const videoFileInput = document.getElementById('video-file');
-    const videoPreviewContainer = document.getElementById('video-preview-container');
-    const videoPreview = document.getElementById('video-preview');
-    let selectedVideoFile = null;
+  // 3. Función Subir Archivo
+  async function uploadFile(file, bucket) {
+    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+    const { error } = await sb.storage.from(bucket).upload(fileName, file);
+    if (error) throw error;
+    const { data } = sb.storage.from(bucket).getPublicUrl(fileName);
+    return data.publicUrl;
+  }
 
-    videoFileInput?.addEventListener('change', (e) => {
+  // 4. Lógica del Hero (Reemplazar/Eliminar)
+  const heroFileInput = document.getElementById('hero-image');
+  const deleteHeroBtn = document.getElementById('delete-hero-btn');
+  const heroId = document.getElementById('hero-id')?.value;
+
+  if (heroFileInput) {
+    heroFileInput.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      if (file.size > 50 * 1024 * 1024) { showToast('❌ El video no debe superar los 50MB'); return; }
-      selectedVideoFile = file;
-      videoPreview.src = URL.createObjectURL(file);
-      videoPreviewContainer.classList.remove('hidden');
-    });
+      if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); heroFileInput.value = ''; return; }
 
-    document.getElementById('remove-video')?.addEventListener('click', () => {
-      selectedVideoFile = null; videoFileInput.value = ''; videoPreviewContainer.classList.add('hidden');
-    });
+      const progressDiv = document.getElementById('hero-upload-progress');
+      const progressBar = document.getElementById('hero-progress-bar');
+      const progressPercent = document.getElementById('hero-progress-percent');
+      const successDiv = document.getElementById('hero-upload-success');
 
-    document.getElementById('video-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      const originalText = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Guardando...';
+      if (progressDiv) progressDiv.classList.remove('hidden');
+      if (successDiv) successDiv.classList.add('hidden');
+      if (progressBar) progressBar.style.width = '30%';
+      if (progressPercent) progressPercent.textContent = '30%';
+
       try {
-        if (!selectedVideoFile) { showToast('❌ Selecciona un video'); btn.disabled = false; btn.textContent = originalText; return; }
-        showToast('📤 Subiendo video...');
-        const fileName = `${Date.now()}_${selectedVideoFile.name.replace(/\s/g, '_')}`;
-        const { error } = await sb.storage.from('videos').upload(fileName, selectedVideoFile);
-        if (error) throw error;
-        const { data } = sb.storage.from('videos').getPublicUrl(fileName);
-        const id = document.getElementById('hero-id').value;
-        if (id) await sb.from('hero_content').update({ video_url: data.publicUrl }).eq('id', id);
-        else await sb.from('hero_content').insert({ video_url: data.publicUrl });
-        showToast('✅ Video guardado');
+        if (progressBar) progressBar.style.width = '60%';
+        if (progressPercent) progressPercent.textContent = '60%';
+        
+        const imageUrl = await uploadFile(file, 'site');
+        
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.textContent = '100%';
+
+        if (heroId) {
+          await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+        } else {
+          await sb.from('hero_content').insert({ background_image: imageUrl });
+        }
+
+        if (progressDiv) progressDiv.classList.add('hidden');
+        if (successDiv) {
+          successDiv.classList.remove('hidden');
+          showToast('✅ Imagen actualizada. Recargando...');
+          setTimeout(() => location.reload(), 1500);
+        }
+      } catch (err) {
+        if (progressDiv) progressDiv.classList.add('hidden');
+        showToast('❌ Error: ' + err.message);
+        heroFileInput.value = '';
+      }
+    });
+  }
+
+  if (deleteHeroBtn) {
+    deleteHeroBtn.addEventListener('click', async () => {
+      if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
+      try {
+        if (heroId) {
+          await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+        }
+        showToast('✅ Imagen eliminada. Recargando...');
         setTimeout(() => location.reload(), 1000);
       } catch (err) {
-        showToast('❌ ' + err.message);
-        btn.disabled = false; btn.textContent = originalText;
+        showToast('❌ Error al eliminar: ' + err.message);
       }
     });
+  }
 
-    // ===== GALERÍA =====
-    document.querySelectorAll('.slot-file-input').forEach(input => {
-      input.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); return; }
-        const slot = input.dataset.slot;
-        const slotEl = document.querySelector(`.gallery-slot[data-slot="${slot}"]`);
-        const progress = slotEl.querySelector('.upload-progress');
-        const progressBar = slotEl.querySelector('.progress-bar');
-        const progressPercent = slotEl.querySelector('.progress-percent');
-        const success = slotEl.querySelector('.upload-success');
-        progress.classList.remove('hidden'); success.classList.add('hidden');
-        progressBar.style.width = '30%'; progressPercent.textContent = '30%';
+  // 5. Lógica de Guardar Textos del Hero (Formulario)
+  const heroForm = document.getElementById('hero-form');
+  if (heroForm) {
+    heroForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = heroForm.querySelector('button[type="submit"]');
+      if (btn) {
+        const originalText = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Guardando...';
         try {
-          const imageUrl = await uploadFile(file, 'gallery');
-          progressBar.style.width = '100%'; progressPercent.textContent = '100%';
-          const slotId = slotEl.dataset.id;
-          const fileName = file.name.replace(/\.[^/.]+$/, '');
-          if (slotId) {
-            await sb.from('gallery_images').update({ image_url: imageUrl, title: fileName, category: 'general', is_active: true }).eq('id', slotId);
-          } else {
-            const { data: inserted } = await sb.from('gallery_images').insert({ image_url: imageUrl, title: fileName, category: 'general', is_active: true }).select().single();
-            if (inserted) slotEl.dataset.id = inserted.id;
-          }
-          setTimeout(() => { progress.classList.add('hidden'); success.classList.remove('hidden'); setTimeout(() => location.reload(), 1500); }, 500);
-        } catch (err) { progress.classList.add('hidden'); showToast(' ' + err.message); }
-      });
-    });
-
-    document.querySelectorAll('.replace-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const slot = btn.closest('.gallery-slot').dataset.slot;
-        document.querySelector(`.slot-file-input[data-slot="${slot}"]`).click();
-      });
-    });
-
-    document.querySelectorAll('.delete-slot-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('¿Eliminar esta foto?')) return;
-        const slotEl = btn.closest('.gallery-slot');
-        const slotId = slotEl.dataset.id;
-        if (slotId) { await sb.from('gallery_images').delete().eq('id', slotId); showToast('✅ Foto eliminada'); setTimeout(() => location.reload(), 1000); }
-      });
-    });
-  
-    // ===== HERO IMAGEN (Lógica simple y directa) =====
-    const heroFileInput = document.getElementById('hero-image');
-    const deleteHeroBtn = document.getElementById('delete-hero-btn');
-    const heroId = document.getElementById('hero-id')?.value;
-
-    if (heroFileInput) {
-      heroFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        
-        if (file.size > 5 * 1024 * 1024) { 
-          showToast('❌ La imagen no debe superar los 5MB'); 
-          heroFileInput.value = '';
-          return; 
-        }
-
-        const progressDiv = document.getElementById('hero-upload-progress');
-        const progressBar = document.getElementById('hero-progress-bar');
-        const progressPercent = document.getElementById('hero-progress-percent');
-        const successDiv = document.getElementById('hero-upload-success');
-        
-        if (progressDiv) progressDiv.classList.remove('hidden');
-        if (successDiv) successDiv.classList.add('hidden');
-        if (progressBar) progressBar.style.width = '30%';
-        if (progressPercent) progressPercent.textContent = '30%';
-
-        try {
-          if (progressBar) progressBar.style.width = '60%';
-          if (progressPercent) progressPercent.textContent = '60%';
-          
-          const imageUrl = await uploadFile(file, 'site');
-          
-          if (progressBar) progressBar.style.width = '100%';
-          if (progressPercent) progressPercent.textContent = '100%';
-
+          const data = {
+            title: document.getElementById('hero-title')?.value || '',
+            subtitle: document.getElementById('hero-subtitle')?.value || '',
+            cta_text: document.getElementById('hero-cta')?.value || '',
+            cta_link: document.getElementById('hero-link')?.value || ''
+          };
           if (heroId) {
-            await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+            await sb.from('hero_content').update(data).eq('id', heroId);
           } else {
-            await sb.from('hero_content').insert({ background_image: imageUrl });
+            await sb.from('hero_content').insert(data);
           }
-
-          if (progressDiv) progressDiv.classList.add('hidden');
-          if (successDiv) {
-            successDiv.classList.remove('hidden');
-            showToast('✅ Imagen actualizada. Recargando...');
-            setTimeout(() => location.reload(), 1500);
-          }
-        } catch (err) {
-          if (progressDiv) progressDiv.classList.add('hidden');
-          showToast('❌ Error: ' + err.message);
-          heroFileInput.value = '';
-        }
-      });
-    }
-
-    if (deleteHeroBtn) {
-      deleteHeroBtn.addEventListener('click', async () => {
-        if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
-        try {
-          if (heroId) {
-            await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          }
-          showToast('✅ Imagen eliminada. Recargando...');
+          showToast('✅ Textos guardados correctamente');
           setTimeout(() => location.reload(), 1000);
         } catch (err) {
-          showToast('❌ Error al eliminar: ' + err.message);
+          showToast('❌ Error: ' + err.message);
+        } finally {
+          btn.disabled = false; btn.textContent = originalText;
         }
-      });
-    }
-
-  </script>
+      }
+    });
+  }
+</script>
 </AdminLayout>
