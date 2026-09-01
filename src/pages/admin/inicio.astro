@@ -100,6 +100,12 @@ const hero_image = hero?.background_image || '';
             <label class="block text-sm font-semibold mb-2">Enlace del Botón</label>
             <input type="text" id="hero-link" value={hero?.cta_link || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
           </div>
+        <div class="mt-6 pt-4 border-t border-solaris-border">
+          <button type="button" id="btn-save-texts" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg">
+            💾 Guardar Cambios de Texto
+          </button>
+        </div>
+
         </div>
         
         <button type="submit" class="btn-primary w-full justify-center">💾 Guardar Hero</button>
@@ -222,14 +228,8 @@ const hero_image = hero?.background_image || '';
 <script is:inline>
   const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
   
-  sb.auth.getSession().then(({ data }) => { 
-    if (!data.session) window.location.href = '/admin/login'; 
-  });
-  
-  document.getElementById('logout-btn')?.addEventListener('click', async () => { 
-    await sb.auth.signOut(); 
-    window.location.href = '/admin/login'; 
-  });
+  sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
+  document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
 
   function showToast(msg) {
     let toast = document.getElementById('toast');
@@ -241,7 +241,7 @@ const hero_image = hero?.background_image || '';
     }
     toast.textContent = msg;
     toast.style.opacity = '1';
-    setTimeout(() => toast.style.opacity = '0', 4000);
+    setTimeout(() => toast.style.opacity = '0', 3000);
   }
 
   async function uploadFile(file, bucket) {
@@ -252,28 +252,17 @@ const hero_image = hero?.background_image || '';
     return urlData.publicUrl;
   }
 
-  // --- LÓGICA DEL HERO CON ALERTAS PARA MÓVIL ---
-  const heroFileInput = document.getElementById('hero-image');
-  const deleteHeroBtn = document.getElementById('delete-hero-btn');
+  // --- VARIABLES GLOBALES ---
   const heroIdInput = document.getElementById('hero-id');
   const heroId = heroIdInput ? heroIdInput.value : null;
 
-  // ALERTA DE DIAGNÓSTICO AL CARGAR LA PÁGINA
-  if (heroId) {
-    showToast('✅ Sistema listo. ID detectado: ' + heroId);
-  } else {
-    alert('⚠️ ADVERTENCIA: No se detectó el ID del Hero. Se intentará crear uno nuevo.');
-  }
-
+  // --- 1. LÓGICA DE REEMPLAZAR IMAGEN (Ya funciona) ---
+  const heroFileInput = document.getElementById('hero-image');
   if (heroFileInput) {
     heroFileInput.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { 
-        alert('❌ La imagen no debe superar los 5MB'); 
-        heroFileInput.value = ''; 
-        return; 
-      }
+      if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
 
       const progressDiv = document.getElementById('hero-upload-progress');
       const progressBar = document.getElementById('hero-progress-bar');
@@ -293,44 +282,76 @@ const hero_image = hero?.background_image || '';
         if (progressPercent) progressPercent.textContent = '90%';
 
         if (heroId) {
-          const { error: updateError } = await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
-          if (updateError) throw new Error('Base de datos (update): ' + updateError.message);
+          const { error } = await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+          if (error) throw error;
         } else {
-          const { error: insertError } = await sb.from('hero_content').insert({ background_image: imageUrl, title: 'ENERGÍA PARA TU FUTURO' });
-          if (insertError) throw new Error('Base de datos (insert): ' + insertError.message);
+          const { error } = await sb.from('hero_content').insert({ background_image: imageUrl });
+          if (error) throw error;
         }
-
-        if (progressBar) progressBar.style.width = '100%';
-        if (progressPercent) progressPercent.textContent = '100%';
 
         if (progressDiv) progressDiv.classList.add('hidden');
         showToast('✅ Imagen actualizada. Recargando...');
-        setTimeout(() => location.reload(), 1500);
+        setTimeout(() => location.reload(), 1000);
         
       } catch (err) {
         if (progressDiv) progressDiv.classList.add('hidden');
-        // ALERTA CRÍTICA CON EL ERROR EXACTO DE SUPABASE
-        alert('💥 ERROR DETALLADO:\n\n' + err.message + '\n\n(Toma captura de este mensaje y envíalo)');
-        heroFileInput.value = '';
+        alert(' Error al subir: ' + err.message);
       }
     });
   }
 
+  // --- 2. LÓGICA DE ELIMINAR IMAGEN (Corregida) ---
+  const deleteHeroBtn = document.getElementById('delete-hero-btn');
   if (deleteHeroBtn) {
     deleteHeroBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO del Hero?')) return;
+      e.stopPropagation(); // Evita que el formulario se envíe
+      if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
+      
       try {
         if (heroId) {
-          const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          if (error) throw new Error('Base de datos: ' + error.message);
-        } else {
-          throw new Error('No se encontró el ID para eliminar.');
+          // Usamos null para borrar el campo en Supabase
+          const { error } = await sb.from('hero_content').update({ background_image: null }).eq('id', heroId);
+          if (error) throw error;
         }
-        showToast('✅ Imagen de fondo eliminada. Recargando...');
+        alert('✅ Imagen eliminada correctamente. La página se recargará.');
+        location.reload();
+      } catch (err) {
+        alert('💥 Error al eliminar: ' + err.message);
+      }
+    });
+  }
+
+  // --- 3. LÓGICA DE GUARDAR TEXTOS (Nueva e independiente) ---
+  const saveTextsBtn = document.getElementById('btn-save-texts');
+  if (saveTextsBtn) {
+    saveTextsBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Evita que el formulario se envíe
+      
+      const title = document.getElementById('hero-title')?.value || '';
+      const subtitle = document.getElementById('hero-subtitle')?.value || '';
+      const cta_text = document.getElementById('hero-cta')?.value || '';
+      const cta_link = document.getElementById('hero-link')?.value || '';
+
+      saveTextsBtn.disabled = true;
+      saveTextsBtn.textContent = 'Guardando...';
+
+      try {
+        if (heroId) {
+          const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
+          if (error) throw error;
+        } else {
+          const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
+          if (error) throw error;
+        }
+        alert('✅ Textos guardados correctamente.');
         setTimeout(() => location.reload(), 1000);
       } catch (err) {
-        alert('💥 ERROR AL ELIMINAR:\n\n' + err.message);
+        alert('💥 Error al guardar textos: ' + err.message);
+      } finally {
+        saveTextsBtn.disabled = false;
+        saveTextsBtn.textContent = '💾 Guardar Cambios de Texto';
       }
     });
   }
