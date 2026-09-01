@@ -16,28 +16,25 @@ function getYouTubeId(url) {
 }
 ---
 <PublicLayout title={hero?.title || 'SOLARIS'} description={hero?.subtitle || ''} activeTab="inicio" isHome={true}>
-  <section class="rounded-card overflow-hidden shadow-lg mb-8 bg-gradient-to-b from-solaris-dark to-black py-16 px-6 md:py-24">
-    <div class="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto">
-      
-      <!-- Título Amarillo -->
-      <h1 class="text-4xl md:text-6xl font-bold tracking-tight" style="color: #fbbf24; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); font-weight: 900;">
+  <section
+    class="relative rounded-card overflow-hidden shadow-lg mb-8 min-h-[520px] md:min-h-[620px] flex items-center justify-center bg-cover bg-center"
+    style="background-image: url('https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png');"
+  >
+    <div class="absolute inset-0 bg-black/35"></div>
+
+    <div class="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto px-6 py-16 md:py-24">
+
+      <h1 class="text-4xl md:text-6xl font-bold tracking-tight" style="color: #fbbf24; text-shadow: 2px 2px 8px rgba(0,0,0,0.85); font-weight: 900;">
         {hero?.title || 'ENERGÍA PARA TU FUTURO'}
       </h1>
-      
-      <!-- Subtítulo Verde -->
-      <p class="text-lg md:text-2xl max-w-2xl mx-auto" style="color: #22c55e; font-weight: 600;">
+
+      <p class="text-lg md:text-2xl max-w-2xl mx-auto" style="color: #22c55e; font-weight: 600; text-shadow: 2px 2px 6px rgba(0,0,0,0.85);">
         {hero?.subtitle || 'Descubre cómo la energía solar puede transformar tu hogar.'}
       </p>
 
-      <!-- Botón de acción -->
-      <a href={hero?.cta_link || '/productos'} class="btn-primary inline-flex text-lg px-8 py-3 rounded-full shadow-lg hover:scale-105 transition-transform">
+      <a href={hero?.cta_link || '/productos'} class="inline-flex items-center justify-center text-lg px-8 py-3 rounded-full shadow-xl hover:scale-105 transition-transform" style="background:#2563eb;color:white;font-weight:700;border:2px solid rgba(255,255,255,0.35);text-shadow:1px 1px 3px rgba(0,0,0,0.35);">
         {hero?.cta_text || 'VER PRODUCTOS'}
       </a>
-
-      <!-- Logotipo Grande Debajo de todo -->
-      <div class="mt-6 pt-6 border-t border-white/10 w-full flex justify-center">
-        <img src="https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png" alt="Logo SolarPower" class="h-48 md:h-64 w-auto object-contain drop-shadow-2xl" />
-      </div>
 
     </div>
   </section>
