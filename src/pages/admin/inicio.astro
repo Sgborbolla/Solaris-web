@@ -2,18 +2,16 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase } from '../../lib/supabase.js';
 
-// Si no hay datos, usa {} o [] para evitar el error "Cannot read properties of null"
-const { data: heroData } = await supabase.from('hero').select('*').single();
-const hero = heroData || {};
+// Obtener datos de hero_content (la tabla correcta que usa el script)
+const { data: heroContentData } = await supabase.from('hero_content').select('*').single();
+const hero = heroContentData || {};
 
+// Obtener galería
 const { data: galleryData } = await supabase.from('gallery').select('*');
 const gallerySlots = galleryData || [];
 
-let hero_image = '';
-const { data: settingData } = await supabase.from('site_settings').select('value').eq('key', 'hero_image').single();
-if (settingData) {
-  hero_image = settingData.value;
-}
+// Para compatibilidad con el HTML que usa hero.background_image
+const hero_image = hero?.background_image || '';
 ---
 <AdminLayout title="Editar Inicio" activeTab="inicio">
   <header class="bg-white border-b border-solaris-border shadow-sm sticky top-0 z-50">
