@@ -2,17 +2,15 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase } from '../../lib/supabase.js';
 
-// Obtener datos de hero_content (la tabla correcta que usa el script)
-const { data: heroContentData } = await supabase.from('hero_content').select('*').single();
-const hero = heroContentData || {};
+// Logo fijo (no editable)
+const { data: logoData } = await supabase.from('site_settings').select('value').eq('key', 'site_logo').single();
+const site_logo = logoData?.value || '/images/logo.png';
 
-// Obtener galería
-const { data: galleryData } = await supabase.from('gallery_images').select('*');
-const gallerySlots = galleryData || [];
-
-// Para compatibilidad con el HTML que usa hero.background_image
-const hero_image = hero?.background_image || '';
+// Textos fijos (no editables desde el admin)
+const { data: heroData } = await supabase.from('hero_content').select('*').single();
+const hero = heroData || {};
 ---
+
 <AdminLayout title="Editar Inicio" activeTab="inicio">
   <header class="bg-white border-b border-solaris-border shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -30,293 +28,103 @@ const hero_image = hero?.background_image || '';
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
     <h1 class="text-3xl font-bold text-solaris-dark mb-8">🏠 Editar Página de Inicio</h1>
 
-    
-
-    <!-- HERO (cuadro bonito para la imagen de fondo) -->
+    <!-- LOGO (FIJO, NO EDITABLE) -->
     <div class="card p-6 mb-6">
-      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🎯 Sección Hero (Foto grande principal)</h2>
-      <p class="text-sm text-solaris-text mb-6">Edita la imagen de fondo y el texto que aparece sobre ella.</p>
-      
-      <form id="hero-form" class="space-y-6" onsubmit="return false;">
-  <input type="hidden" id="hero-id" value={hero?.id || ''} />
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🏷️ Logotipo del Sitio</h2>
+      <p class="text-sm text-solaris-text mb-4">Este logo está fijo y no se puede editar desde aquí.</p>
+      <div class="flex items-center gap-4">
+        <img src={site_logo} alt="Logo" class="h-16 object-contain" />
+        <span class="text-sm text-solaris-text italic">(Fijo)</span>
+      </div>
+    </div>
 
-  <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
-    <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
-
-    {hero?.background_image ? (
+    <!-- TEXTOS DEL HERO (FIJOS, NO EDITABLES) -->
+    <div class="card p-6 mb-6">
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">📝 Textos Principales</h2>
+      <p class="text-sm text-solaris-text mb-4">Estos textos están fijos y no se pueden editar desde aquí.</p>
       <div class="space-y-3">
-        <img id="hero-current-img" src={hero.background_image} class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-        <div class="flex gap-2">
-          <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm text-center cursor-pointer">
-            🔄 Reemplazar
-          </label>
-          <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm">
-            🗑️ Eliminar
-          </button>
+        <div>
+          <span class="text-xs font-semibold text-solaris-text">TÍTULO:</span>
+          <p class="text-lg font-bold">{hero.title || 'ENERGÍA PARA TU FUTURO'}</p>
+        </div>
+        <div>
+          <span class="text-xs font-semibold text-solaris-text">SUBTÍTULO:</span>
+          <p class="text-base">{hero.subtitle || 'Descubre cómo la energía solar puede transformar tu hogar y reducir tus costos hasta un 90%.'}</p>
+        </div>
+        <div>
+          <span class="text-xs font-semibold text-solaris-text">BOTÓN:</span>
+          <p class="text-base">{hero.cta_text || 'VER PRODUCTOS'} → {hero.cta_link || '/productos'}</p>
         </div>
       </div>
-    ) : (
-      <label for="hero-file-input" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
-        <div class="flex flex-col items-center justify-center p-6">
-          <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
+    </div>
+
+    <!-- VIDEO PROMOCIONAL (EDITABLE) -->
+    <div class="card p-6 mb-6">
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🎥 Video Promocional</h2>
+      <p class="text-sm text-solaris-text mb-6">Sube o cambia el video que aparece en la página de inicio.</p>
+
+      <form id="video-form" class="space-y-4">
+        <input type="hidden" id="video-id" value={hero?.id || ''} />
+
+        <div>
+          <label class="block text-sm font-semibold mb-2">URL del Video (YouTube, Vimeo, etc.)</label>
+          <input type="text" id="video-url" value={hero?.video_url || ''} placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
         </div>
-      </label>
-    )}
 
-    <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
-
-    <div id="hero-preview-container" class="mt-3 hidden">
-      <p class="text-xs text-solaris-text mb-1 font-semibold">Vista previa:</p>
-      <img id="hero-preview" src="" class="w-full h-48 object-cover rounded-card border-2 border-solaris-primary" />
-    </div>
-
-    <div id="hero-progress" class="hidden mt-3">
-      <div class="flex justify-between text-xs mb-1">
-        <span class="text-solaris-text font-semibold">Subiendo imagen...</span>
-        <span id="hero-progress-text" class="text-solaris-primary font-bold">0%</span>
-      </div>
-      <div class="w-full bg-solaris-gray rounded-full h-2.5">
-        <div id="hero-progress-bar" class="bg-solaris-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-      </div>
+        <button type="submit" id="btn-save-video" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg">
+          💾 Guardar Video
+        </button>
+      </form>
     </div>
   </div>
-
-  <div class="space-y-4">
-    <div>
-      <label class="block text-sm font-semibold mb-2">Título Principal</label>
-      <input type="text" id="hero-title" value={hero?.title || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
-    </div>
-    <div>
-      <label class="block text-sm font-semibold mb-2">Subtítulo</label>
-      <textarea id="hero-subtitle" rows="3" class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary resize-none">{hero?.subtitle || ''}</textarea>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-semibold mb-2">Texto del Botón</label>
-        <input type="text" id="hero-cta" value={hero?.cta_text || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">Enlace del Botón</label>
-        <input type="text" id="hero-link" value={hero?.cta_link || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
-      </div>
-    </div>
-  </div>
-
-  <div class="pt-4 border-t border-solaris-border">
-    <button type="button" id="btn-save-hero" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg flex items-center justify-center gap-2">
-      💾 Guardar Hero
-    </button>
-  </div>
-</form>
-
+</AdminLayout>
 
 <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script is:inline>
   const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
   
-  const heroId = document.getElementById('hero-id')?.value;
-  const fileInput = document.getElementById('hero-file-input');
-  const imgContainer = document.getElementById('hero-img-container');
-  const uploadBox = document.getElementById('hero-upload-box');
-  const currentImg = document.getElementById('hero-current-img');
-  const previewContainer = document.getElementById('hero-preview-container');
-  const previewImg = document.getElementById('hero-preview');
-  const progressDiv = document.getElementById('hero-progress');
-  const progressBar = document.getElementById('hero-progress-bar');
-  const progressText = document.getElementById('hero-progress-text');
-  const btnSave = document.getElementById('btn-save-hero');
-  const btnDelete = document.getElementById('btn-delete-hero');
+  sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
+  document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
 
-  if (fileInput) {
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+  const videoForm = document.getElementById('video-form');
+  const btnSaveVideo = document.getElementById('btn-save-video');
+
+  if (videoForm) {
+    videoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
       
-      alert('1. Archivo selec<script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script is:inline>
-  const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
-  
-  const heroId = document.getElementById('hero-id')?.value;
-  const fileInput = document.getElementById('hero-file-input');
-  const previewContainer = document.getElementById('hero-preview-container');
-  const previewImg = document.getElementById('hero-preview');
-  const progressDiv = document.getElementById('hero-progress');
-  const progressBar = document.getElementById('hero-progress-bar');
-  const progressText = document.getElementById('hero-progress-text');
-  const btnSave = document.getElementById('btn-save-hero');
-  const btnDelete = document.getElementById('btn-delete-hero');
+      const videoId = document.getElementById('video-id')?.value;
+      const videoUrl = document.getElementById('video-url')?.value || '';
 
-  // 1. SUBIR IMAGEN
-  if (fileInput) {
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
-
-      const reader = new FileReader();
-      reader.onload = (ev) => { previewImg.src = ev.target.result; previewContainer.classList.remove('hidden'); };
-      reader.readAsDataURL(file);
-
-      progressDiv.classList.remove('hidden');
-      progressBar.style.width = '30%'; progressText.textContent = '30%';
+      btnSaveVideo.disabled = true;
+      btnSaveVideo.innerHTML = '⏳ Guardando...';
+      btnSaveVideo.style.backgroundColor = '#60a5fa';
 
       try {
-        const fileName = 'img_' + Date.now() + '_' + file.name.replace(/\s/g, '_');
-        const { error: upErr } = await sb.storage.from('images').upload(fileName, file);
-        if (upErr) throw new Error('Storage: ' + upErr.message);
-
-        progressBar.style.width = '70%'; progressText.textContent = '70%';
-        const { data: urlData } = sb.storage.from('images').getPublicUrl(fileName);
-        
-        if (heroId) {
-          const { error: dbErr } = await sb.from('hero_content').update({ background_image: urlData.publicUrl }).eq('id', heroId);
-          if (dbErr) throw new Error('DB: ' + dbErr.message);
+        if (videoId) {
+          const { error } = await sb.from('hero_content').update({ video_url: videoUrl }).eq('id', videoId);
+          if (error) throw error;
         } else {
-          const { error: dbErr } = await sb.from('hero_content').insert({ background_image: urlData.publicUrl, title: 'ENERGÍA PARA TU FUTURO' });
-          if (dbErr) throw new Error('DB: ' + dbErr.message);
+          const { error } = await sb.from('hero_content').insert({ video_url: videoUrl, title: 'ENERGÍA PARA TU FUTURO' });
+          if (error) throw error;
         }
 
-        progressBar.style.width = '100%'; progressText.textContent = '100%';
-        alert('✅ Imagen guardada correctamente. La página se recargará para mostrar los cambios.');
-        setTimeout(() => location.reload(), 500);
-
-      } catch (err) {
-        alert('❌ Error: ' + err.message);
-        progressDiv.classList.add('hidden');
-        previewContainer.classList.add('hidden');
-      }
-      fileInput.value = '';
-    });
-  }
-
-  // 2. ELIMINAR IMAGEN
-  if (btnDelete) {
-    btnDelete.addEventListener('click', async () => {
-      if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
-      try {
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          if (error) throw new Error('DB: ' + error.message);
-        }
-        alert('✅ Imagen eliminada correctamente. La página se recargará.');
-        setTimeout(() => location.reload(), 500);
-      } catch (err) {
-        alert('❌ Error al eliminar: ' + err.message);
-      }
-    });
-  }
-
-  // 3. GUARDAR TEXTOS
-  if (btnSave) {
-    btnSave.addEventListener('click', async () => {
-      const title = document.getElementById('hero-title')?.value || '';
-      const subtitle = document.getElementById('hero-subtitle')?.value || '';
-      const cta_text = document.getElementById('hero-cta')?.value || '';
-      const cta_link = document.getElementById('hero-link')?.value || '';
-
-      btnSave.disabled = true;
-      btnSave.innerHTML = '⏳ Guardando...';
-      btnSave.style.backgroundColor = '#60a5fa';
-
-      try {
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
-          if (error) throw new Error('DB: ' + error.message);
-        } else {
-          const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
-          if (error) throw new Error('DB: ' + error.message);
-        }
-
-        btnSave.innerHTML = '✅ Guardado';
-        btnSave.style.backgroundColor = '#22c55e';
+        btnSaveVideo.innerHTML = '✅ Guardado';
+        btnSaveVideo.style.backgroundColor = '#22c55e';
         
         setTimeout(() => {
-          alert('✅ Textos guardados correctamente.');
-          location.reload();
-        }, 800);
+          btnSaveVideo.disabled = false;
+          btnSaveVideo.innerHTML = '💾 Guardar Video';
+          btnSaveVideo.style.backgroundColor = '#2563eb';
+          alert('✅ Video guardado correctamente.');
+        }, 1500);
 
       } catch (err) {
         alert('❌ Error al guardar: ' + err.message);
-        btnSave.disabled = false;
-        btnSave.innerHTML = '💾 Guardar Hero';
-        btnSave.style.backgroundColor = '#2563eb';
+        btnSaveVideo.disabled = false;
+        btnSaveVideo.innerHTML = '💾 Guardar Video';
+        btnSaveVideo.style.backgroundColor = '#2563eb';
       }
     });
   }
-
-  // === CARGA DINÁMICA DE DATOS (Solución para sitios estáticos) ===
-  async function cargarDatosHeroFrescos() {
-    try {
-      const { data, error } = await sb.from('hero_content').select('*').single();
-      if (data && !error) {
-        // 1. Rellenar los campos de texto
-        const titleInput = document.getElementById('hero-title');
-        const subtitleInput = document.getElementById('hero-subtitle');
-        const ctaInput = document.getElementById('hero-cta');
-        const linkInput = document.getElementById('hero-link');
-        
-        if (titleInput) titleInput.value = data.title || '';
-        if (subtitleInput) subtitleInput.value = data.subtitle || '';
-        if (ctaInput) ctaInput.value = data.cta_text || '';
-        if (linkInput) linkInput.value = data.cta_link || '';
-
-        // 2. Mostrar la imagen y los botones si existe
-        if (data.background_image) {
-          const imgContainer = document.getElementById('hero-img-container');
-          const uploadBox = document.getElementById('hero-upload-box');
-          const currentImg = document.getElementById('hero-current-img');
-          
-          if (imgContainer && uploadBox && currentImg) {
-            currentImg.src = data.background_image;
-            uploadBox.style.display = 'none';
-            imgContainer.style.display = 'block';
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error cargando datos frescos:', err);
-    }
-  }
-  
-  // Ejecutar apenas cargue la página
-  cargarDatosHeroFrescos();
-
-
-  // === CARGA DINÁMICA DE DATOS ===
-  async function cargarDatosHeroFrescos() {
-    try {
-      const { data, error } = await sb.from('hero_content').select('*').single();
-      if (data && !error) {
-        const titleInput = document.getElementById('hero-title');
-        const subtitleInput = document.getElementById('hero-subtitle');
-        const ctaInput = document.getElementById('hero-cta');
-        const linkInput = document.getElementById('hero-link');
-        
-        if (titleInput) titleInput.value = data.title || '';
-        if (subtitleInput) subtitleInput.value = data.subtitle || '';
-        if (ctaInput) ctaInput.value = data.cta_text || '';
-        if (linkInput) linkInput.value = data.cta_link || '';
-
-        if (data.background_image) {
-          const imgContainer = document.getElementById('hero-img-container');
-          const uploadBox = document.getElementById('hero-upload-box');
-          const currentImg = document.getElementById('hero-current-img');
-          
-          if (imgContainer && uploadBox && currentImg) {
-            currentImg.src = data.background_image;
-            uploadBox.style.display = 'none';
-            imgContainer.style.display = 'block';
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error cargando datos:', err);
-    }
-  }
-  cargarDatosHeroFrescos();
-
 </script>
-</AdminLayout>
