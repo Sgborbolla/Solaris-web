@@ -1,34 +1,47 @@
 ---
-import BottomNav from '../components/BottomNav.astro';
-interface Props { title: string; activeTab?: string; }
+import AdminBottomNav from '../components/AdminBottomNav.astro';
+
+interface Props {
+  title: string;
+  activeTab?: string;
+}
+
 const { title, activeTab = 'dashboard' } = Astro.props;
 ---
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} | Admin Solaris</title>
+  <title>{title} | Admin</title>
   <script is:inline src="https://cdn.tailwindcss.com"></script>
   <script is:inline>
-    tailwind.config = { theme: { extend: { colors: { 'solaris-primary': '#2563eb', 'solaris-accent': '#f59e0b', 'solaris-dark': '#0f172a', 'solaris-text': '#64748b', 'solaris-gray': '#f1f5f9', 'solaris-border': '#e2e8f0' }, borderRadius: { 'card': '16px' } } } }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'solaris-primary': '#2563eb',
+            'solaris-accent': '#f59e0b',
+            'solaris-dark': '#0f172a',
+            'solaris-text': '#64748b',
+            'solaris-gray': '#f1f5f9',
+            'solaris-border': '#e2e8f0',
+          },
+          borderRadius: { 'card': '16px', 'pill': '9999px' }
+        }
+      }
+    }
   </script>
-  <style>body { font-family: system-ui, sans-serif; padding-bottom: 5rem; } .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }</style>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  </style>
 </head>
-<body class="bg-solaris-gray">
-  <!-- Header Admin con botón Salir -->
-  <header class="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 shadow-sm z-50">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <span class="text-lg font-bold text-solaris-dark">Panel Admin</span>
-      <a href="/" class="text-red-500 font-bold hover:text-red-700 transition-colors">Salir</a>
-    </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-4 py-20 pt-24">
+<body class="bg-solaris-gray pb-20">
+  <main class="max-w-4xl mx-auto px-4 py-8 pt-20">
     <slot />
   </main>
-  
-  <!-- BottomNav en modo Admin -->
-  <BottomNav activeTab={activeTab} isAdmin={true} />
+  <AdminBottomNav activeTab={activeTab} />
 </body>
 </html>
