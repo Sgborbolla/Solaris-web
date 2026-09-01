@@ -139,124 +139,122 @@ const hero_image = hero?.background_image || '';
   const btnSave = document.getElementById('btn-save-hero');
 
   // 1. SUBIR / REEMPLAZAR IMAGEN (Con vista previa)
-  if (fileInput) {
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
 
-      const reader = new FileReader();
-      reader.onload = (ev) => { 
-        previewImg.src = ev.target.result; 
-        previewContainer.classList.remove('hidden'); 
-      };
-      reader.readAsDataURL(file);
+    // Mostrar vista previa inmediatamente
+    const reader = new FileReader();
+    reader.onload = (ev) => { 
+      previewImg.src = ev.target.result; 
+      previewContainer.classList.remove('hidden'); 
+    };
+    reader.readAsDataURL(file);
 
-      progressDiv.classList.remove('hidden');
-      progressBar.style.width = '30%'; progressText.textContent = '30%';
+    progressDiv.classList.remove('hidden');
+    progressBar.style.width = '30%'; progressText.textContent = '30%';
 
-      try {
-        const fileName = `site_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-        const { error: upErr } = await sb.storage.from('site').upload(fileName, file);
-        if (upErr) throw upErr;
+    try {
+      const fileName = `site_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+      const { error: upErr } = await sb.storage.from('site').upload(fileName, file);
+      if (upErr) throw upErr;
 
-        progressBar.style.width = '70%'; progressText.textContent = '70%';
-        const { data: urlData } = sb.storage.from('site').getPublicUrl(fileName);
-        const publicUrl = urlData.publicUrl;
+      progressBar.style.width = '70%'; progressText.textContent = '70%';
+      const { data: urlData } = sb.storage.from('site').getPublicUrl(fileName);
+      const publicUrl = urlData.publicUrl;
 
-        if (heroId) {
-          const { error: dbErr } = await sb.from('hero_content').update({ background_image: publicUrl }).eq('id', heroId);
-          if (dbErr) throw dbErr;
-        } else {
-          const { error: dbErr } = await sb.from('hero_content').insert({ background_image: publicUrl, title: 'ENERGÍA PARA TU FUTURO' });
-          if (dbErr) throw dbErr;
-        }
+      if (heroId) {
+        const { error: dbErr } = await sb.from('hero_content').update({ background_image: publicUrl }).eq('id', heroId);
+        if (dbErr) throw dbErr;
+      } else {
+        const { error: dbErr } = await sb.from('hero_content').insert({ background_image: publicUrl, title: 'ENERGÍA PARA TU FUTURO' });
+        if (dbErr) throw dbErr;
+      }
 
-        progressBar.style.width = '100%'; progressText.textContent = '100%';
-        setTimeout(() => {
-          progressDiv.classList.add('hidden');
-          previewContainer.classList.add('hidden');
-        }, 1000);
-
-        if (uploadBox) uploadBox.classList.add('hidden');
-        if (imgContainer) {
-          currentImg.src = publicUrl;
-          imgContainer.classList.remove('hidden');
-        } else {
-          location.reload();
-        }
-        alert('✅ Imagen actualizada correctamente');
-
-      } catch (err) {
-        alert('❌ Error al subir: ' + err.message);
+      progressBar.style.width = '100%'; progressText.textContent = '100%';
+      setTimeout(() => {
         progressDiv.classList.add('hidden');
         previewContainer.classList.add('hidden');
+      }, 1000);
+
+      // Actualizar la pantalla al instante
+      if (uploadBox) uploadBox.classList.add('hidden');
+      if (imgContainer) {
+        currentImg.src = publicUrl;
+        imgContainer.classList.remove('hidden');
+      } else {
+        location.reload();
       }
-      fileInput.value = '';
-    });
-  }
+      alert('✅ Imagen actualizada correctamente');
 
-  // 2. ELIMINAR IMAGEN (Desaparece al instante)
-  const deleteBtn = document.getElementById('btn-delete-hero');
-  if (deleteBtn) {
-    deleteBtn.addEventListener('click', async () => {
-      if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
-      try {
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          if (error) throw error;
-        }
-        if (imgContainer) imgContainer.classList.add('hidden');
-        if (uploadBox) uploadBox.classList.remove('hidden');
-        alert('✅ Imagen eliminada. El espacio está listo para una nueva foto.');
-      } catch (err) {
-        alert('❌ Error al eliminar: ' + err.message);
+    } catch (err) {
+      alert('❌ Error al subir: ' + err.message);
+      progressDiv.classList.add('hidden');
+      previewContainer.classList.add('hidden');
+    }
+    fileInput.value = '';
+  });
+
+  // 2. ELIMINAR IMAGEN (Desaparece al instante y muestra el cuadro en blanco)
+  document.getElementById('btn-delete-hero').addEventListener('click', async () => {
+    if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
+    try {
+      if (heroId) {
+        const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+        if (error) throw error;
       }
-    });
-  }
+      // Ocultar imagen y mostrar cuadro en blanco al instante
+      if (imgContainer) imgContainer.classList.add('hidden');
+      if (uploadBox) uploadBox.classList.remove('hidden');
+      alert('✅ Imagen eliminada. El espacio está listo para una nueva foto.');
+    } catch (err) {
+      alert('❌ Error al eliminar: ' + err.message);
+    }
+  });
 
-  // 3. GUARDAR HERO (Animación de 3 fases)
-  if (btnSave) {
-    btnSave.addEventListener('click', async () => {
-      const title = document.getElementById('hero-title')?.value || '';
-      const subtitle = document.getElementById('hero-subtitle')?.value || '';
-      const cta_text = document.getElementById('hero-cta')?.value || '';
-      const cta_link = document.getElementById('hero-link')?.value || '';
+  // 3. GUARDAR HERO (Con la animación de 3 fases que te gustó)
+  btnSave.addEventListener('click', async () => {
+    const title = document.getElementById('hero-title').value;
+    const subtitle = document.getElementById('hero-subtitle').value;
+    const cta_text = document.getElementById('hero-cta').value;
+    const cta_link = document.getElementById('hero-link').value;
 
-      btnSave.disabled = true;
-      btnSave.innerHTML = '⏳ Guardando...';
-      btnSave.classList.remove('bg-solaris-primary');
-      btnSave.classList.add('bg-blue-400', 'opacity-75');
+    // Fase 1: Guardando
+    btnSave.disabled = true;
+    btnSave.innerHTML = '⏳ Guardando...';
+    btnSave.classList.remove('bg-solaris-primary');
+    btnSave.classList.add('bg-blue-400', 'opacity-75');
 
-      try {
-        if (heroId) {
-          const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
-          if (error) throw error;
-        } else {
-          const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
-          if (error) throw error;
-        }
+    try {
+      if (heroId) {
+        const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
+        if (error) throw error;
+      }
 
-        btnSave.innerHTML = '✅ Guardado';
-        btnSave.classList.remove('bg-blue-400', 'opacity-75');
-        btnSave.classList.add('bg-green-500');
+      // Fase 2: Guardado (Éxito)
+      btnSave.innerHTML = '✅ Guardado';
+      btnSave.classList.remove('bg-blue-400', 'opacity-75');
+      btnSave.classList.add('bg-green-500');
 
-        setTimeout(() => {
-          btnSave.disabled = false;
-          btnSave.innerHTML = '💾 Guardar Hero';
-          btnSave.classList.remove('bg-green-500');
-          btnSave.classList.add('bg-solaris-primary');
-        }, 2000);
-
-      } catch (err) {
-        alert('❌ Error al guardar: ' + err.message);
+      // Fase 3: Volver al estado original
+      setTimeout(() => {
         btnSave.disabled = false;
         btnSave.innerHTML = '💾 Guardar Hero';
-        btnSave.classList.remove('bg-blue-400', 'opacity-75', 'bg-green-500');
+        btnSave.classList.remove('bg-green-500');
         btnSave.classList.add('bg-solaris-primary');
-      }
-    });
-  }
-</script>
+      }, 2000);
 
+    } catch (err) {
+      alert('❌ Error al guardar: ' + err.message);
+      btnSave.disabled = false;
+      btnSave.innerHTML = '💾 Guardar Hero';
+      btnSave.classList.remove('bg-blue-400', 'opacity-75', 'bg-green-500');
+      btnSave.classList.add('bg-solaris-primary');
+    }
+  });
+</script>
 </AdminLayout>
