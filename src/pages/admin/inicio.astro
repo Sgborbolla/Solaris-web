@@ -284,5 +284,39 @@ const hero_image = hero?.background_image || '';
   // Ejecutar apenas cargue la página
   cargarDatosHeroFrescos();
 
+
+  // === CARGA DINÁMICA DE DATOS ===
+  async function cargarDatosHeroFrescos() {
+    try {
+      const { data, error } = await sb.from('hero_content').select('*').single();
+      if (data && !error) {
+        const titleInput = document.getElementById('hero-title');
+        const subtitleInput = document.getElementById('hero-subtitle');
+        const ctaInput = document.getElementById('hero-cta');
+        const linkInput = document.getElementById('hero-link');
+        
+        if (titleInput) titleInput.value = data.title || '';
+        if (subtitleInput) subtitleInput.value = data.subtitle || '';
+        if (ctaInput) ctaInput.value = data.cta_text || '';
+        if (linkInput) linkInput.value = data.cta_link || '';
+
+        if (data.background_image) {
+          const imgContainer = document.getElementById('hero-img-container');
+          const uploadBox = document.getElementById('hero-upload-box');
+          const currentImg = document.getElementById('hero-current-img');
+          
+          if (imgContainer && uploadBox && currentImg) {
+            currentImg.src = data.background_image;
+            uploadBox.style.display = 'none';
+            imgContainer.style.display = 'block';
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error cargando datos:', err);
+    }
+  }
+  cargarDatosHeroFrescos();
+
 </script>
 </AdminLayout>
