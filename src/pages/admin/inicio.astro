@@ -241,35 +241,36 @@ const hero_image = hero?.background_image || '';
     }
     toast.textContent = msg;
     toast.style.opacity = '1';
-    setTimeout(() => toast.style.opacity = '0', 3000);
+    setTimeout(() => toast.style.opacity = '0', 4000);
   }
 
   async function uploadFile(file, bucket) {
     const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    console.log('📤 Subiendo a bucket:', bucket, 'archivo:', fileName);
     const { data, error } = await sb.storage.from(bucket).upload(fileName, file);
-    if (error) {
-      console.error('❌ Error de subida:', error);
-      throw new Error('Error al subir: ' + error.message);
-    }
+    if (error) throw new Error('Storage: ' + error.message);
     const { data: urlData } = sb.storage.from(bucket).getPublicUrl(fileName);
     return urlData.publicUrl;
   }
 
-  // --- LÓGICA DEL HERO ---
+  // --- LÓGICA DEL HERO CON ALERTAS PARA MÓVIL ---
   const heroFileInput = document.getElementById('hero-image');
   const deleteHeroBtn = document.getElementById('delete-hero-btn');
   const heroIdInput = document.getElementById('hero-id');
   const heroId = heroIdInput ? heroIdInput.value : null;
 
-  console.log('🔍 Hero ID encontrado:', heroId);
+  // ALERTA DE DIAGNÓSTICO AL CARGAR LA PÁGINA
+  if (heroId) {
+    showToast('✅ Sistema listo. ID detectado: ' + heroId);
+  } else {
+    alert('⚠️ ADVERTENCIA: No se detectó el ID del Hero. Se intentará crear uno nuevo.');
+  }
 
   if (heroFileInput) {
     heroFileInput.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) { 
-        showToast('❌ La imagen no debe superar los 5MB'); 
+        alert('❌ La imagen no debe superar los 5MB'); 
         heroFileInput.value = ''; 
         return; 
       }
@@ -277,10 +278,8 @@ const hero_image = hero?.background_image || '';
       const progressDiv = document.getElementById('hero-upload-progress');
       const progressBar = document.getElementById('hero-progress-bar');
       const progressPercent = document.getElementById('hero-progress-percent');
-      const successDiv = document.getElementById('hero-upload-success');
 
       if (progressDiv) progressDiv.classList.remove('hidden');
-      if (successDiv) successDiv.classList.add('hidden');
       if (progressBar) progressBar.style.width = '30%';
       if (progressPercent) progressPercent.textContent = '30%';
 
@@ -288,36 +287,30 @@ const hero_image = hero?.background_image || '';
         if (progressBar) progressBar.style.width = '60%';
         if (progressPercent) progressPercent.textContent = '60%';
         
-        console.log('⏳ Iniciando subida a Supabase...');
         const imageUrl = await uploadFile(file, 'site');
-        console.log('✅ Subida exitosa, URL:', imageUrl);
         
         if (progressBar) progressBar.style.width = '90%';
         if (progressPercent) progressPercent.textContent = '90%';
 
         if (heroId) {
-          console.log('💾 Actualizando registro con ID:', heroId);
           const { error: updateError } = await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
-          if (updateError) throw updateError;
+          if (updateError) throw new Error('Base de datos (update): ' + updateError.message);
         } else {
-          console.log('💾 Insertando nuevo registro...');
-          const { error: insertError } = await sb.from('hero_content').insert({ background_image: imageUrl });
-          if (insertError) throw insertError;
+          const { error: insertError } = await sb.from('hero_content').insert({ background_image: imageUrl, title: 'ENERGÍA PARA TU FUTURO' });
+          if (insertError) throw new Error('Base de datos (insert): ' + insertError.message);
         }
 
         if (progressBar) progressBar.style.width = '100%';
         if (progressPercent) progressPercent.textContent = '100%';
 
         if (progressDiv) progressDiv.classList.add('hidden');
-        if (successDiv) {
-          successDiv.classList.remove('hidden');
-          showToast('✅ Imagen actualizada. Recargando...');
-          setTimeout(() => location.reload(), 1500);
-        }
+        showToast('✅ Imagen actualizada. Recargando...');
+        setTimeout(() => location.reload(), 1500);
+        
       } catch (err) {
-        console.error('💥 Error completo:', err);
         if (progressDiv) progressDiv.classList.add('hidden');
-        showToast('❌ Error: ' + err.message);
+        // ALERTA CRÍTICA CON EL ERROR EXACTO DE SUPABASE
+        alert('💥 ERROR DETALLADO:\n\n' + err.message + '\n\n(Toma captura de este mensaje y envíalo)');
         heroFileInput.value = '';
       }
     });
@@ -326,18 +319,18 @@ const hero_image = hero?.background_image || '';
   if (deleteHeroBtn) {
     deleteHeroBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      console.log('🗑️ Botón eliminar clickeado. Hero ID:', heroId);
       if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO del Hero?')) return;
       try {
         if (heroId) {
           const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
-          if (error) throw error;
+          if (error) throw new Error('Base de datos: ' + error.message);
+        } else {
+          throw new Error('No se encontró el ID para eliminar.');
         }
         showToast('✅ Imagen de fondo eliminada. Recargando...');
         setTimeout(() => location.reload(), 1000);
       } catch (err) {
-        console.error('💥 Error al eliminar:', err);
-        showToast('❌ Error al eliminar: ' + err.message);
+        alert('💥 ERROR AL ELIMINAR:\n\n' + err.message);
       }
     });
   }
