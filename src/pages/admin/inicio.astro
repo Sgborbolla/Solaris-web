@@ -2,11 +2,11 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase } from '../../lib/supabase.js';
 
-// Logo fijo (no editable)
+// Logo fijo
 const { data: logoData } = await supabase.from('site_settings').select('value').eq('key', 'site_logo').single();
-const site_logo = 'https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png';
+const site_logo = logoData?.value || 'https://djyysffxpbvbfkcmrhta.supabase.co/storage/v1/object/public/images/logo_solarpower.png';
 
-// Textos fijos (no editables desde el admin)
+// Textos del hero
 const { data: heroData } = await supabase.from('hero_content').select('*').single();
 const hero = heroData || {};
 ---
@@ -28,53 +28,81 @@ const hero = heroData || {};
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
     <h1 class="text-3xl font-bold text-solaris-dark mb-8">🏠 Editar Página de Inicio</h1>
 
-    <!-- LOGO (FIJO, NO EDITABLE) -->
+    <!-- LOGO -->
     <div class="card p-6 mb-6">
-      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🏷️ Logotipo del Sitio</h2>
-      <p class="text-sm text-solaris-text mb-4">Este logo está fijo y no se puede editar desde aquí.</p>
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4">️ Logotipo del Sitio</h2>
       <div class="flex items-center gap-4">
-        <img src={site_logo} alt="Logo" class="h-16 object-contain" />
-        <span class="text-sm text-solaris-text italic">(Fijo)</span>
+        <img src={site_logo} alt="Logo SolarPower" class="h-20 object-contain" />
       </div>
     </div>
 
-    <!-- TEXTOS DEL HERO (FIJOS, NO EDITABLES) -->
+    <!-- TEXTOS DEL HERO (SOLO VISUALIZACIÓN) -->
     <div class="card p-6 mb-6">
-      <h2 class="text-2xl font-bold text-solaris-dark mb-4">📝 Textos Principales</h2>
-      <p class="text-sm text-solaris-text mb-4">Estos textos están fijos y no se pueden editar desde aquí.</p>
-      <div class="space-y-3">
+      <h2 class="text-2xl font-bold text-solaris-dark mb-4"> Textos Principales</h2>
+      <div class="space-y-3 text-solaris-text">
         <div>
-          <span class="text-xs font-semibold text-solaris-text">TÍTULO:</span>
+          <span class="text-xs font-semibold">TÍTULO:</span>
           <p class="text-lg font-bold">{hero.title || 'ENERGÍA PARA TU FUTURO'}</p>
         </div>
         <div>
-          <span class="text-xs font-semibold text-solaris-text">SUBTÍTULO:</span>
-          <p class="text-base">{hero.subtitle || 'Descubre cómo la energía solar puede transformar tu hogar y reducir tus costos hasta un 90%.'}</p>
-        </div>
-        <div>
-          <span class="text-xs font-semibold text-solaris-text">BOTÓN:</span>
-          <p class="text-base">{hero.cta_text || 'VER PRODUCTOS'} → {hero.cta_link || '/productos'}</p>
+          <span class="text-xs font-semibold">SUBTÍTULO:</span>
+          <p class="text-base">{hero.subtitle || 'Descubre cómo la energía solar puede transformar tu hogar.'}</p>
         </div>
       </div>
     </div>
 
-    <!-- VIDEO PROMOCIONAL (EDITABLE) -->
+    <!-- VIDEO PROMOCIONAL (CUADRO BONITO DE SUBIDA) -->
     <div class="card p-6 mb-6">
       <h2 class="text-2xl font-bold text-solaris-dark mb-4">🎥 Video Promocional</h2>
       <p class="text-sm text-solaris-text mb-6">Sube o cambia el video que aparece en la página de inicio.</p>
 
-      <form id="video-form" class="space-y-4">
-        <input type="hidden" id="video-id" value={hero?.id || ''} />
+      <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
+        {hero?.video_url ? (
+          <div class="space-y-3">
+            <div class="aspect-video bg-black rounded-lg overflow-hidden">
+              <iframe src={hero.video_url.replace('watch?v=', 'embed/')} class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <div class="flex gap-2">
+              <label for="video-upload" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-4 py-3 rounded text-sm font-semibold shadow-sm text-center cursor-pointer hover:bg-solaris-gray transition-colors">
+                🔄 Cambiar Video
+              </label>
+              <button type="button" id="btn-delete-video" class="flex-1 bg-red-500 text-white px-4 py-3 rounded text-sm font-semibold shadow-sm">
+                🗑️ Eliminar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label for="video-upload" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
+            <div class="flex flex-col items-center justify-center p-6">
+              <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <p class="text-solaris-text font-semibold text-lg">Toca para subir video promocional</p>
+              <p class="text-xs text-solaris-text mt-2">YouTube, Vimeo, etc.</p>
+            </div>
+          </label>
+        )}
 
-        <div>
-          <label class="block text-sm font-semibold mb-2">URL del Video (YouTube, Vimeo, etc.)</label>
-          <input type="text" id="video-url" value={hero?.video_url || ''} placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
+        <input type="file" id="video-upload" accept="video/*" class="hidden" />
+
+        <div id="video-progress" class="hidden mt-4">
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-solaris-text font-semibold">Subiendo video...</span>
+            <span id="video-progress-text" class="text-solaris-primary font-bold">0%</span>
+          </div>
+          <div class="w-full bg-solaris-gray rounded-full h-2.5">
+            <div id="video-progress-bar" class="bg-solaris-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
         </div>
+      </div>
 
-        <button type="submit" id="btn-save-video" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg">
-          💾 Guardar Video
+      <div class="mt-4">
+        <label class="block text-sm font-semibold mb-2">O pega la URL del video:</label>
+        <input type="text" id="video-url-manual" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
+        <button type="button" id="btn-save-url" class="mt-2 w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform">
+          💾 Guardar URL
         </button>
-      </form>
+      </div>
     </div>
   </div>
 </AdminLayout>
@@ -83,47 +111,94 @@ const hero = heroData || {};
 <script is:inline>
   const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
   
-  sb.auth.getSession().then(({ data }) => { if (!data.session) window.location.href = '/admin/login'; });
-  document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); window.location.href = '/admin/login'; });
+  const heroId = document.getElementById('hero-id')?.value || '3';
+  const videoUpload = document.getElementById('video-upload');
+  const videoProgress = document.getElementById('video-progress');
+  const videoProgressBar = document.getElementById('video-progress-bar');
+  const videoProgressText = document.getElementById('video-progress-text');
+  const btnDeleteVideo = document.getElementById('btn-delete-video');
+  const btnSaveUrl = document.getElementById('btn-save-url');
+  const videoUrlManual = document.getElementById('video-url-manual');
 
-  const videoForm = document.getElementById('video-form');
-  const btnSaveVideo = document.getElementById('btn-save-video');
-
-  if (videoForm) {
-    videoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  // Subir video desde archivo
+  if (videoUpload) {
+    videoUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
       
-      const videoId = document.getElementById('video-id')?.value;
-      const videoUrl = document.getElementById('video-url')?.value || '';
+      if (file.size > 50 * 1024 * 1024) { 
+        alert('❌ El video no debe superar los 50MB'); 
+        return; 
+      }
 
-      btnSaveVideo.disabled = true;
-      btnSaveVideo.innerHTML = '⏳ Guardando...';
-      btnSaveVideo.style.backgroundColor = '#60a5fa';
+      videoProgress.classList.remove('hidden');
+      videoProgressBar.style.width = '30%'; 
+      videoProgressText.textContent = '30%';
 
       try {
-        if (videoId) {
-          const { error } = await sb.from('hero_content').update({ video_url: videoUrl }).eq('id', videoId);
-          if (error) throw error;
-        } else {
-          const { error } = await sb.from('hero_content').insert({ video_url: videoUrl, title: 'ENERGÍA PARA TU FUTURO' });
-          if (error) throw error;
-        }
+        const fileName = 'video_' + Date.now() + '_' + file.name.replace(/\s/g, '_');
+        const { error: upErr } = await sb.storage.from('videos').upload(fileName, file);
+        if (upErr) throw new Error('Storage: ' + upErr.message);
 
-        btnSaveVideo.innerHTML = '✅ Guardado';
-        btnSaveVideo.style.backgroundColor = '#22c55e';
+        videoProgressBar.style.width = '70%'; 
+        videoProgressText.textContent = '70%';
         
-        setTimeout(() => {
-          btnSaveVideo.disabled = false;
-          btnSaveVideo.innerHTML = '💾 Guardar Video';
-          btnSaveVideo.style.backgroundColor = '#2563eb';
-          alert('✅ Video guardado correctamente.');
-        }, 1500);
+        const { data: urlData } = sb.storage.from('videos').getPublicUrl(fileName);
+        
+        const { error: dbErr } = await sb.from('hero_content').update({ video_url: urlData.publicUrl }).eq('id', heroId);
+        if (dbErr) throw new Error('DB: ' + dbErr.message);
+
+        videoProgressBar.style.width = '100%'; 
+        videoProgressText.textContent = '100%';
+        alert('✅ Video subido correctamente');
+        setTimeout(() => location.reload(), 500);
 
       } catch (err) {
-        alert('❌ Error al guardar: ' + err.message);
-        btnSaveVideo.disabled = false;
-        btnSaveVideo.innerHTML = '💾 Guardar Video';
-        btnSaveVideo.style.backgroundColor = '#2563eb';
+        alert('❌ Error: ' + err.message);
+        videoProgress.classList.add('hidden');
+      }
+      videoUpload.value = '';
+    });
+  }
+
+  // Eliminar video
+  if (btnDeleteVideo) {
+    btnDeleteVideo.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar el video promocional?')) return;
+      try {
+        const { error } = await sb.from('hero_content').update({ video_url: '' }).eq('id', heroId);
+        if (error) throw error;
+        alert('✅ Video eliminado');
+        setTimeout(() => location.reload(), 500);
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+      }
+    });
+  }
+
+  // Guardar URL manual
+  if (btnSaveUrl) {
+    btnSaveUrl.addEventListener('click', async () => {
+      const url = videoUrlManual.value.trim();
+      if (!url) {
+        alert('❌ Ingresa una URL válida');
+        return;
+      }
+
+      btnSaveUrl.disabled = true;
+      btnSaveUrl.innerHTML = '⏳ Guardando...';
+
+      try {
+        const { error } = await sb.from('hero_content').update({ video_url: url }).eq('id', heroId);
+        if (error) throw error;
+        
+        btnSaveUrl.innerHTML = '✅ Guardado';
+        btnSaveUrl.style.backgroundColor = '#22c55e';
+        setTimeout(() => location.reload(), 1000);
+      } catch (err) {
+        alert('❌ Error: ' + err.message);
+        btnSaveUrl.disabled = false;
+        btnSaveUrl.innerHTML = '💾 Guardar URL';
       }
     });
   }
