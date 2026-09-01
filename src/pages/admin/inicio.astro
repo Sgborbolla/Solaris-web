@@ -52,7 +52,7 @@ const hero_image = hero?.background_image || '';
             🔄 Reemplazar
           </label>
           <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">
-            ️ Eliminar
+            🗑️ Eliminar
           </button>
         </div>
       </div>
@@ -72,7 +72,13 @@ const hero_image = hero?.background_image || '';
 
     <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
 
-    <div id="hero-progress" class="hidden mt-4">
+    <!-- Vista Previa y Barra de Progreso -->
+    <div id="hero-preview-container" class="mt-3 hidden">
+      <p class="text-xs text-solaris-text mb-1 font-semibold">Vista previa:</p>
+      <img id="hero-preview" src="" class="w-full h-48 object-cover rounded-card border-2 border-solaris-primary" />
+    </div>
+
+    <div id="hero-progress" class="hidden mt-3">
       <div class="flex justify-between text-xs mb-1">
         <span class="text-solaris-text font-semibold">Subiendo imagen...</span>
         <span id="hero-progress-text" class="text-solaris-primary font-bold">0%</span>
@@ -105,7 +111,7 @@ const hero_image = hero?.background_image || '';
     </div>
   </div>
 
-  <!-- BOTÓN GUARDAR ÚNICO -->
+  <!-- BOTÓN GUARDAR ÚNICO CON ANIMACIÓN -->
   <div class="pt-4 border-t border-solaris-border">
     <button type="button" id="btn-save-hero" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg flex items-center justify-center gap-2">
       💾 Guardar Hero
@@ -125,22 +131,32 @@ const hero_image = hero?.background_image || '';
   const imgContainer = document.getElementById('hero-img-container');
   const uploadBox = document.getElementById('hero-upload-box');
   const currentImg = document.getElementById('hero-current-img');
+  const previewContainer = document.getElementById('hero-preview-container');
+  const previewImg = document.getElementById('hero-preview');
   const progressDiv = document.getElementById('hero-progress');
   const progressBar = document.getElementById('hero-progress-bar');
   const progressText = document.getElementById('hero-progress-text');
   const btnSave = document.getElementById('btn-save-hero');
 
-  // 1. SUBIR / REEMPLAZAR IMAGEN
+  // 1. SUBIR / REEMPLAZAR IMAGEN (Con vista previa)
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert('❌ La imagen no debe superar los 5MB'); return; }
 
+    // Mostrar vista previa inmediatamente
+    const reader = new FileReader();
+    reader.onload = (ev) => { 
+      previewImg.src = ev.target.result; 
+      previewContainer.classList.remove('hidden'); 
+    };
+    reader.readAsDataURL(file);
+
     progressDiv.classList.remove('hidden');
     progressBar.style.width = '30%'; progressText.textContent = '30%';
 
     try {
-      const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+      const fileName = `site_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
       const { error: upErr } = await sb.storage.from('site').upload(fileName, file);
       if (upErr) throw upErr;
 
@@ -157,37 +173,30 @@ const hero_image = hero?.background_image || '';
       }
 
       progressBar.style.width = '100%'; progressText.textContent = '100%';
-      setTimeout(() => progressDiv.classList.add('hidden'), 1000);
+      setTimeout(() => {
+        progressDiv.classList.add('hidden');
+        previewContainer.classList.add('hidden');
+      }, 1000);
 
       // Actualizar la pantalla al instante
       if (uploadBox) uploadBox.classList.add('hidden');
-      if (!imgContainer) {
-        // Si no existía el contenedor de imagen, lo creamos
-        const newContainer = document.createElement('div');
-        newContainer.id = 'hero-img-container';
-        newContainer.className = 'space-y-3';
-        newContainer.innerHTML = \`
-          <img id="hero-current-img" src="\${publicUrl}" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-          <div class="flex gap-2">
-            <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform text-center cursor-pointer">🔄 Reemplazar</label>
-            <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🗑️ Eliminar</button>
-          </div>
-        \`;
-        uploadBox.parentNode.insertBefore(newContainer, uploadBox);
-      } else {
+      if (imgContainer) {
         currentImg.src = publicUrl;
         imgContainer.classList.remove('hidden');
+      } else {
+        location.reload();
       }
       alert('✅ Imagen actualizada correctamente');
 
     } catch (err) {
       alert('❌ Error al subir: ' + err.message);
       progressDiv.classList.add('hidden');
+      previewContainer.classList.add('hidden');
     }
     fileInput.value = '';
   });
 
-  // 2. ELIMINAR IMAGEN (Actualización instantánea de la UI)
+  // 2. ELIMINAR IMAGEN (Desaparece al instante y muestra el cuadro en blanco)
   document.getElementById('btn-delete-hero').addEventListener('click', async () => {
     if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
     try {
@@ -204,7 +213,7 @@ const hero_image = hero?.background_image || '';
     }
   });
 
-  // 3. GUARDAR TEXTOS (Con la animación de 3 fases)
+  // 3. GUARDAR HERO (Con la animación de 3 fases que te gustó)
   btnSave.addEventListener('click', async () => {
     const title = document.getElementById('hero-title').value;
     const subtitle = document.getElementById('hero-subtitle').value;
