@@ -157,11 +157,11 @@ const hero_image = hero?.background_image || '';
 
     try {
       const fileName = `site_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-      const { error: upErr } = await sb.storage.from('site').upload(fileName, file);
+      const { error: upErr } = await sb.storage.from('images').upload(fileName, file);
       if (upErr) throw upErr;
 
       progressBar.style.width = '70%'; progressText.textContent = '70%';
-      const { data: urlData } = sb.storage.from('site').getPublicUrl(fileName);
+      const { data: urlData } = sb.storage.from('images').getPublicUrl(fileName);
       const publicUrl = urlData.publicUrl;
 
       if (heroId) {
