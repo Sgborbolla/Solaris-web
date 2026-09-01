@@ -54,7 +54,7 @@ const hero_image = hero?.background_image || '';
               🔄 Reemplazar
               <input type="file" id="hero-image" name="hero_image" accept="image/*" class="hidden" />
             </label>
-            <button type="button" id="delete-hero-btn" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🗑️ Eliminar</button>
+            
           </div>
         </div>
       ) : (
@@ -101,15 +101,22 @@ const hero_image = hero?.background_image || '';
             <input type="text" id="hero-link" value={hero?.cta_link || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
           </div>
         <div class="mt-6 pt-4 border-t border-solaris-border">
-          <button type="button" id="btn-save-texts" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg">
-            💾 Guardar Cambios de Texto
-          </button>
+          
         </div>
 
         </div>
         
         <button type="submit" class="btn-primary w-full justify-center">💾 Guardar Hero</button>
       </form>
+
+      <div class="mt-4">
+        <button type="button" id="delete-hero-btn" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">🗑️ Eliminar</button>
+      </div>
+      <div class="mt-4">
+        <button type="button" id="btn-save-texts" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg">
+            💾 Guardar Cambios de Texto
+          </button>
+      </div>
     </div>
 
     <!-- VIDEO -->
@@ -255,8 +262,10 @@ const hero_image = hero?.background_image || '';
   // --- VARIABLES GLOBALES ---
   const heroIdInput = document.getElementById('hero-id');
   const heroId = heroIdInput ? heroIdInput.value : null;
+  
+  alert('🔍 Diagnóstico: Hero ID = ' + (heroId || 'NO DETECTADO'));
 
-  // --- 1. LÓGICA DE REEMPLAZAR IMAGEN (Ya funciona) ---
+  // --- 1. REEMPLAZAR IMAGEN ---
   const heroFileInput = document.getElementById('hero-image');
   if (heroFileInput) {
     heroFileInput.addEventListener('change', async (e) => {
@@ -290,65 +299,74 @@ const hero_image = hero?.background_image || '';
         }
 
         if (progressDiv) progressDiv.classList.add('hidden');
-        showToast('✅ Imagen actualizada. Recargando...');
+        alert('✅ Imagen actualizada correctamente');
         setTimeout(() => location.reload(), 1000);
         
       } catch (err) {
         if (progressDiv) progressDiv.classList.add('hidden');
-        alert(' Error al subir: ' + err.message);
+        alert('❌ Error al subir: ' + err.message);
       }
     });
   }
 
-  // --- 2. LÓGICA DE ELIMINAR IMAGEN (Corregida) ---
+  // --- 2. ELIMINAR IMAGEN (CORREGIDO) ---
   const deleteHeroBtn = document.getElementById('delete-hero-btn');
   if (deleteHeroBtn) {
     deleteHeroBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      e.stopPropagation(); // Evita que el formulario se envíe
+      e.stopPropagation();
+      
+      alert('🗑️ Botón eliminar clickeado. Hero ID: ' + (heroId || 'NO DETECTADO'));
+      
       if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO?')) return;
       
       try {
         if (heroId) {
-          // Usamos null para borrar el campo en Supabase
-          const { error } = await sb.from('hero_content').update({ background_image: null }).eq('id', heroId);
+          // Usar string vacío en lugar de null
+          const { data, error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId).select();
           if (error) throw error;
+          alert('✅ Respuesta de Supabase: ' + JSON.stringify(data));
+        } else {
+          throw new Error('No se encontró el ID del Hero');
         }
-        alert('✅ Imagen eliminada correctamente. La página se recargará.');
-        location.reload();
+        alert('✅ Imagen eliminada. Recargando...');
+        setTimeout(() => location.reload(), 1000);
       } catch (err) {
-        alert('💥 Error al eliminar: ' + err.message);
+        alert('❌ Error al eliminar: ' + err.message);
       }
     });
   }
 
-  // --- 3. LÓGICA DE GUARDAR TEXTOS (Nueva e independiente) ---
+  // --- 3. GUARDAR TEXTOS (CORREGIDO) ---
   const saveTextsBtn = document.getElementById('btn-save-texts');
   if (saveTextsBtn) {
     saveTextsBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      e.stopPropagation(); // Evita que el formulario se envíe
+      e.stopPropagation();
       
       const title = document.getElementById('hero-title')?.value || '';
       const subtitle = document.getElementById('hero-subtitle')?.value || '';
       const cta_text = document.getElementById('hero-cta')?.value || '';
       const cta_link = document.getElementById('hero-link')?.value || '';
 
+      alert(' Guardando textos...\nTítulo: ' + title + '\nHero ID: ' + (heroId || 'NO DETECTADO'));
+
       saveTextsBtn.disabled = true;
       saveTextsBtn.textContent = 'Guardando...';
 
       try {
         if (heroId) {
-          const { error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId);
+          const { data, error } = await sb.from('hero_content').update({ title, subtitle, cta_text, cta_link }).eq('id', heroId).select();
           if (error) throw error;
+          alert('✅ Textos guardados. Respuesta: ' + JSON.stringify(data));
         } else {
-          const { error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link });
+          const { data, error } = await sb.from('hero_content').insert({ title, subtitle, cta_text, cta_link }).select();
           if (error) throw error;
+          alert('✅ Textos creados. Respuesta: ' + JSON.stringify(data));
         }
-        alert('✅ Textos guardados correctamente.');
-        setTimeout(() => location.reload(), 1000);
+        setTimeout(() => location.reload(), 1500);
       } catch (err) {
-        alert('💥 Error al guardar textos: ' + err.message);
+        alert(' Error al guardar: ' + err.message);
       } finally {
         saveTextsBtn.disabled = false;
         saveTextsBtn.textContent = '💾 Guardar Cambios de Texto';
