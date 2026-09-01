@@ -220,10 +220,8 @@ const hero_image = hero?.background_image || '';
   
 <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script is:inline>
-  // 1. Inicializar Supabase
   const sb = window.supabase.createClient('https://djyysffxpbvbfkcmrhta.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeXlzZmZ4cGJ2YmZrY21yaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMjc5MTYsImV4cCI6MjEwMzYwMzkxNn0.Vrtk4z0CW3t7XQEAl3jtLshPNrqXQU53-mWbjZv-eIo');
   
-  // Verificar sesión
   sb.auth.getSession().then(({ data }) => { 
     if (!data.session) window.location.href = '/admin/login'; 
   });
@@ -233,7 +231,6 @@ const hero_image = hero?.background_image || '';
     window.location.href = '/admin/login'; 
   });
 
-  // 2. Función Toast
   function showToast(msg) {
     let toast = document.getElementById('toast');
     if (!toast) {
@@ -247,25 +244,35 @@ const hero_image = hero?.background_image || '';
     setTimeout(() => toast.style.opacity = '0', 3000);
   }
 
-  // 3. Función Subir Archivo
   async function uploadFile(file, bucket) {
     const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-    const { error } = await sb.storage.from(bucket).upload(fileName, file);
-    if (error) throw error;
-    const { data } = sb.storage.from(bucket).getPublicUrl(fileName);
-    return data.publicUrl;
+    console.log('📤 Subiendo a bucket:', bucket, 'archivo:', fileName);
+    const { data, error } = await sb.storage.from(bucket).upload(fileName, file);
+    if (error) {
+      console.error('❌ Error de subida:', error);
+      throw new Error('Error al subir: ' + error.message);
+    }
+    const { data: urlData } = sb.storage.from(bucket).getPublicUrl(fileName);
+    return urlData.publicUrl;
   }
 
-  // 4. Lógica del Hero (Reemplazar/Eliminar)
+  // --- LÓGICA DEL HERO ---
   const heroFileInput = document.getElementById('hero-image');
   const deleteHeroBtn = document.getElementById('delete-hero-btn');
-  const heroId = document.getElementById('hero-id')?.value;
+  const heroIdInput = document.getElementById('hero-id');
+  const heroId = heroIdInput ? heroIdInput.value : null;
+
+  console.log('🔍 Hero ID encontrado:', heroId);
 
   if (heroFileInput) {
     heroFileInput.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { showToast('❌ La imagen no debe superar los 5MB'); heroFileInput.value = ''; return; }
+      if (file.size > 5 * 1024 * 1024) { 
+        showToast('❌ La imagen no debe superar los 5MB'); 
+        heroFileInput.value = ''; 
+        return; 
+      }
 
       const progressDiv = document.getElementById('hero-upload-progress');
       const progressBar = document.getElementById('hero-progress-bar');
@@ -281,16 +288,25 @@ const hero_image = hero?.background_image || '';
         if (progressBar) progressBar.style.width = '60%';
         if (progressPercent) progressPercent.textContent = '60%';
         
+        console.log('⏳ Iniciando subida a Supabase...');
         const imageUrl = await uploadFile(file, 'site');
+        console.log('✅ Subida exitosa, URL:', imageUrl);
         
-        if (progressBar) progressBar.style.width = '100%';
-        if (progressPercent) progressPercent.textContent = '100%';
+        if (progressBar) progressBar.style.width = '90%';
+        if (progressPercent) progressPercent.textContent = '90%';
 
         if (heroId) {
-          await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+          console.log('💾 Actualizando registro con ID:', heroId);
+          const { error: updateError } = await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+          if (updateError) throw updateError;
         } else {
-          await sb.from('hero_content').insert({ background_image: imageUrl });
+          console.log('💾 Insertando nuevo registro...');
+          const { error: insertError } = await sb.from('hero_content').insert({ background_image: imageUrl });
+          if (insertError) throw insertError;
         }
+
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.textContent = '100%';
 
         if (progressDiv) progressDiv.classList.add('hidden');
         if (successDiv) {
@@ -299,6 +315,7 @@ const hero_image = hero?.background_image || '';
           setTimeout(() => location.reload(), 1500);
         }
       } catch (err) {
+        console.error('💥 Error completo:', err);
         if (progressDiv) progressDiv.classList.add('hidden');
         showToast('❌ Error: ' + err.message);
         heroFileInput.value = '';
@@ -307,48 +324,20 @@ const hero_image = hero?.background_image || '';
   }
 
   if (deleteHeroBtn) {
-    deleteHeroBtn.addEventListener('click', async () => {
-      if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
+    deleteHeroBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      console.log('🗑️ Botón eliminar clickeado. Hero ID:', heroId);
+      if (!confirm('¿Estás seguro de eliminar la IMAGEN DE FONDO del Hero?')) return;
       try {
         if (heroId) {
-          await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+          const { error } = await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+          if (error) throw error;
         }
-        showToast('✅ Imagen eliminada. Recargando...');
+        showToast('✅ Imagen de fondo eliminada. Recargando...');
         setTimeout(() => location.reload(), 1000);
       } catch (err) {
+        console.error('💥 Error al eliminar:', err);
         showToast('❌ Error al eliminar: ' + err.message);
-      }
-    });
-  }
-
-  // 5. Lógica de Guardar Textos del Hero (Formulario)
-  const heroForm = document.getElementById('hero-form');
-  if (heroForm) {
-    heroForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = heroForm.querySelector('button[type="submit"]');
-      if (btn) {
-        const originalText = btn.textContent;
-        btn.disabled = true; btn.textContent = 'Guardando...';
-        try {
-          const data = {
-            title: document.getElementById('hero-title')?.value || '',
-            subtitle: document.getElementById('hero-subtitle')?.value || '',
-            cta_text: document.getElementById('hero-cta')?.value || '',
-            cta_link: document.getElementById('hero-link')?.value || ''
-          };
-          if (heroId) {
-            await sb.from('hero_content').update(data).eq('id', heroId);
-          } else {
-            await sb.from('hero_content').insert(data);
-          }
-          showToast('✅ Textos guardados correctamente');
-          setTimeout(() => location.reload(), 1000);
-        } catch (err) {
-          showToast('❌ Error: ' + err.message);
-        } finally {
-          btn.disabled = false; btn.textContent = originalText;
-        }
       }
     });
   }
