@@ -31,103 +31,40 @@ gallery?.forEach((img, i) => { if (i < 2) gallerySlots[i] = img; });
 
     
 
-    <!-- HERO (cuadro bonito para la imagen de fondo) -->
-    <div class="card p-6 mb-6">
-      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🎯 Sección Hero (Foto grande principal)</h2>
-      <p class="text-sm text-solaris-text mb-6">Edita la imagen de fondo y el texto que aparece sobre ella.</p>
+    
+  <!-- Hero Section -->
+  <div class="card p-6 mb-6">
+    <h2 class="text-xl font-bold text-solaris-dark mb-4">🎨 Hero Principal</h2>
+    <p class="text-solaris-text text-sm mb-4">Imagen principal que aparece en la página de inicio.</p>
+    
+    {hero_image and (
+      <div class="mb-4">
+        <img src={hero_image} alt="Hero actual" class="w-full h-64 object-cover rounded-lg mb-3" />
+      </div>
+    )}
+    
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+      <input type="hidden" name="action" value="update_hero" />
       
-      <form id="hero-form" class="space-y-4">
-        <input type="hidden" id="hero-id" value={hero?.id || ''} />
+      <div>
+        <label class="block text-sm font-semibold text-solaris-dark mb-2">Imagen del Hero</label>
+        <input type="file" name="hero_image" accept="image/*" class="w-full px-4 py-2 border border-solaris-border rounded-lg focus:outline-none focus:ring-2 focus:ring-solaris-primary" />
+      </div>
+      
+      <div class="flex gap-2">
+        <button type="submit" class="px-6 py-2 bg-solaris-primary text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+          {hero_image ? 'Reemplazar Imagen' : 'Subir Imagen'}
+        </button>
         
-        <!-- IMAGEN DE FONDO (cuadro bonito) -->
-        <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
-          <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
-          <p class="text-xs text-solaris-text mb-3">Sube la imagen que aparecerá de fondo (mañana subirás el logotipo aquí)</p>
-          
-          {hero?.background_image ? (
-            <div class="relative w-full rounded-card overflow-hidden border-2 border-solaris-border group">
-              <img src={hero.background_image} alt="Fondo actual" class="w-full h-48 object-cover" />
-              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <button type="button" id="replace-hero-btn" class="bg-white text-solaris-dark px-3 py-2 rounded text-sm font-semibold">Reemplazar</button>
-                <button type="button" id="delete-hero-btn" class="bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold">Eliminar</button>
-              </div>
-            </div>
-          ) : (
-            <label class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
-              <div class="flex flex-col items-center justify-center p-6">
-                <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
-                <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
-              </div>
-              <input type="file" id="hero-image" accept="image/*" class="hidden" />
-            </label>
-          )}
-
-          <div id="hero-preview-container" class="mt-3 hidden">
-            <img id="hero-preview" src="" alt="Preview" class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-            <button type="button" id="remove-hero-preview" class="mt-2 text-sm text-red-500 hover:underline">Quitar imagen</button>
-          </div>
-
-          <div id="hero-upload-progress" class="hidden mt-3">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-xs text-solaris-text">Subiendo...</span>
-              <span id="hero-progress-percent" class="text-xs font-semibold text-solaris-primary">0%</span>
-            </div>
-            <div class="w-full bg-solaris-gray rounded-full h-2">
-              <div id="hero-progress-bar" class="bg-solaris-primary h-2 rounded-full transition-all" style="width: 0%"></div>
-            </div>
-          </div>
-          <div id="hero-upload-success" class="hidden mt-3 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-card text-sm">✅ Carga exitosa</div>
-        </div>
-
-        <!-- TEXTOS -->
-        <div>
-          <label class="block text-sm font-semibold mb-2">Título Principal</label>
-          <input type="text" id="hero-title" value={hero?.title || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-2">Subtítulo</label>
-          <textarea id="hero-subtitle" rows="3" class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary resize-none">{hero?.subtitle || ''}</textarea>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-semibold mb-2">Texto del Botón</label>
-            <input type="text" id="hero-cta" value={hero?.cta_text || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
-          </div>
-          <div>
-            <label class="block text-sm font-semibold mb-2">Enlace del Botón</label>
-            <input type="text" id="hero-link" value={hero?.cta_link || ''} class="w-full px-4 py-3 border border-solaris-border rounded-card outline-none focus:ring-2 focus:ring-solaris-primary" />
-          </div>
-        </div>
-        
-        <button type="submit" class="btn-primary w-full justify-center">💾 Guardar Hero</button>
-      </form>
-    </div>
-
-    <!-- VIDEO -->
-    <div class="card p-6 mb-6">
-      <h2 class="text-2xl font-bold text-solaris-dark mb-4">🎥 Video Promocional</h2>
-      <form id="video-form" class="space-y-4">
-        <div>
-          <label class="block text-sm font-semibold mb-2">Subir Video desde tu Dispositivo</label>
-          <p class="text-xs text-solaris-text mb-2">MP4, MOV o WebM (máx. 50MB)</p>
-          <label class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all">
-            <div class="flex flex-col items-center justify-center p-6">
-              <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-solaris-text font-semibold text-lg">Toca para subir video</p>
-              <p class="text-xs text-solaris-text mt-2">MP4, MOV o WebM</p>
-            </div>
-            <input type="file" id="video-file" accept="video/*" class="hidden" />
-          </label>
-          <div id="video-preview-container" class="mt-3 hidden">
-            <video id="video-preview" controls class="w-full max-w-md rounded-card border border-solaris-border"></video>
-            <button type="button" id="remove-video" class="mt-2 text-sm text-red-500 hover:underline">Quitar video</button>
-          </div>
+        {hero_image and (
+          <button type="submit" name="action" value="delete_hero" class="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors" onclick="return confirm('¿Seguro que deseas eliminar la imagen del hero?')">
+            Eliminar Imagen
+          </button>
+        )}
+      </div>
+    </form>
+  </div>
+</div>
         </div>
         <button type="submit" class="btn-primary">💾 Guardar Video</button>
       </form>
