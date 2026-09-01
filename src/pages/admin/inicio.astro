@@ -44,31 +44,43 @@ const hero_image = hero?.background_image || '';
   <div class="bg-blue-50 border border-blue-200 rounded-card p-4">
     <label class="block text-sm font-semibold mb-2">📸 Imagen de Fondo del Hero</label>
 
-    {hero?.background_image ? (
-      <div id="hero-img-container" class="space-y-3">
-        <img id="hero-current-img" src={hero.background_image} class="w-full h-48 object-cover rounded-card border border-solaris-border" />
-        <div class="flex gap-2">
-          <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform text-center cursor-pointer">
+    
+    <!-- SECCIÓN DE IMAGEN (VERSIÓN FORZADA PARA DIAGNÓSTICO) -->
+    <div class="bg-blue-50 border border-blue-200 rounded-card p-4" style="display: block !important;">
+      <label class="block text-sm font-semibold mb-2" style="display: block !important;">📸 Imagen de Fondo del Hero</label>
+      
+      <!-- Contenedor de imagen actual (Siempre visible para probar) -->
+      <div id="hero-img-container" class="space-y-3" style="display: block !important; margin-bottom: 1rem;">
+        <img id="hero-current-img" src={hero?.background_image || 'https://via.placeholder.com/400x200?text=Sin+Imagen'} class="w-full h-48 object-cover rounded-card border border-solaris-border" style="display: block !important;" />
+        <div class="flex gap-2" style="display: flex !important;">
+          <label for="hero-file-input" class="flex-1 bg-white text-solaris-dark border border-solaris-border px-3 py-2 rounded text-sm font-semibold shadow-sm text-center cursor-pointer" style="display: block !important; background-color: #ffffff !important;">
             🔄 Reemplazar
           </label>
-          <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm active:scale-95 transition-transform">
+          <button type="button" id="btn-delete-hero" class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-semibold shadow-sm" style="display: block !important; background-color: #ef4444 !important; color: white !important;">
             🗑️ Eliminar
           </button>
         </div>
       </div>
-    ) : (
-      <div id="hero-upload-box">
-        <label for="hero-file-input" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-solaris-border rounded-card cursor-pointer hover:border-solaris-primary hover:bg-solaris-gray/50 transition-all bg-white">
-          <div class="flex flex-col items-center justify-center p-6">
-            <svg class="w-16 h-16 mb-4 text-solaris-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p class="text-solaris-text font-semibold text-lg">Toca para subir imagen de fondo</p>
-            <p class="text-xs text-solaris-text mt-2">PNG, JPG o WEBP</p>
-          </div>
-        </label>
+
+      <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
+
+      <!-- Vista Previa y Barra de Progreso (Forzadas a ser visibles) -->
+      <div id="hero-preview-container" class="mt-3" style="display: block !important; border: 2px dashed green; padding: 10px;">
+        <p class="text-xs text-green-700 mb-1 font-semibold">VISTA PREVIA (Forzada):</p>
+        <img id="hero-preview" src="" class="w-full h-48 object-cover rounded-card border-2 border-green-500" style="display: block !important; min-height: 50px; background: #f0fdf4;" />
       </div>
-    )}
+
+      <div id="hero-progress" class="mt-3" style="display: block !important; border: 2px dashed blue; padding: 10px;">
+        <div class="flex justify-between text-xs mb-1">
+          <span class="text-blue-700 font-semibold">BARRA DE PROGRESO (Forzada):</span>
+          <span id="hero-progress-text" class="text-blue-700 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-4" style="background-color: #e5e7eb !important;">
+          <div id="hero-progress-bar" class="bg-blue-500 h-4 rounded-full transition-all duration-300" style="width: 30%; background-color: #3b82f6 !important;"></div>
+        </div>
+      </div>
+    </div>
+
 
     <input type="file" id="hero-file-input" accept="image/*" class="hidden" />
 
@@ -113,8 +125,8 @@ const hero_image = hero?.background_image || '';
 
   <!-- BOTÓN GUARDAR ÚNICO CON ANIMACIÓN -->
   <div class="pt-4 border-t border-solaris-border">
-    <button type="button" id="btn-save-hero" class="w-full bg-solaris-primary text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition-transform text-lg flex items-center justify-center gap-2">
-      💾 Guardar Hero
+    <button type="button" id="btn-save-hero" class="w-full text-white font-bold py-4 rounded-lg shadow-lg text-lg flex items-center justify-center gap-2" style="display: flex !important; background-color: #2563eb !important; color: white !important; margin-top: 20px; padding: 16px;">
+      💾 GUARDAR HERO (FORZADO)
     </button>
   </div>
 </form>
