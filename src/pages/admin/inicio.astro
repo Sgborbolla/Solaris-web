@@ -7,7 +7,7 @@ const { data: heroContentData } = await supabase.from('hero_content').select('*'
 const hero = heroContentData || {};
 
 // Obtener galería
-const { data: galleryData } = await supabase.from('gallery').select('*');
+const { data: galleryData } = await supabase.from('gallery_images').select('*');
 const gallerySlots = galleryData || [];
 
 // Para compatibilidad con el HTML que usa hero.background_image
@@ -330,14 +330,91 @@ const hero_image = hero?.background_image || '';
       selectedHeroFile = null; heroImageInput.value = ''; heroPreviewContainer.classList.add('hidden');
     });
 
-    document.getElementById('replace-hero-btn')?.addEventListener('click', () => heroImageInput.click());
+    // ===== HERO: REEMPLAZAR Y ELIMINAR =====
+const heroFileInput = document.getElementById('hero-image');
+const replaceBtn = document.getElementById('replace-hero-btn');
+const deleteBtn = document.getElementById('delete-hero-btn');
+const heroForm = document.getElementById('hero-form');
 
-    document.getElementById('delete-hero-btn')?.addEventListener('click', async () => {
-      if (!confirm('¿Eliminar la imagen de fondo?')) return;
-      const id = document.getElementById('hero-id').value;
-      if (id) await sb.from('hero_content').update({ background_image: '' }).eq('id', id);
+// Al tocar "Reemplazar", activar el input de archivo oculto
+if (replaceBtn && heroFileInput) {
+  replaceBtn.addEventListener('click', () => {
+    heroFileInput.click();
+  });
+}
+
+// Cuando se selecciona un archivo, mostrar preview y preparar envío
+if (heroFileInput) {
+  heroFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 5 * 1024 * 1024) { 
+      showToast('❌ La imagen no debe superar los 5MB'); 
+      heroFileInput.value = '';
+      return; 
+    }
+
+    // Mostrar barra de progreso
+    const progressDiv = document.getElementById('hero-upload-progress');
+    const progressBar = document.getElementById('hero-progress-bar');
+    const progressPercent = document.getElementById('hero-progress-percent');
+    const successDiv = document.getElementById('hero-upload-success');
+    
+    if (progressDiv) progressDiv.classList.remove('hidden');
+    if (successDiv) successDiv.classList.add('hidden');
+    if (progressBar) progressBar.style.width = '30%';
+    if (progressPercent) progressPercent.textContent = '30%';
+
+    try {
+      // Subir archivo
+      if (progressBar) progressBar.style.width = '60%';
+      if (progressPercent) progressPercent.textContent = '60%';
+      
+      const imageUrl = await uploadFile(file, 'site');
+      
+      if (progressBar) progressBar.style.width = '100%';
+      if (progressPercent) progressPercent.textContent = '100%';
+
+      // Actualizar en la base de datos
+      const heroId = document.getElementById('hero-id')?.value;
+      if (heroId) {
+        await sb.from('hero_content').update({ background_image: imageUrl }).eq('id', heroId);
+      } else {
+        await sb.from('hero_content').insert({ background_image: imageUrl });
+      }
+
+      if (progressDiv) progressDiv.classList.add('hidden');
+      if (successDiv) {
+        successDiv.classList.remove('hidden');
+        showToast('✅ Imagen actualizada correctamente');
+        setTimeout(() => location.reload(), 1500);
+      }
+    } catch (err) {
+      if (progressDiv) progressDiv.classList.add('hidden');
+      showToast('❌ Error: ' + err.message);
+      heroFileInput.value = '';
+    }
+  });
+}
+
+// Al tocar "Eliminar"
+if (deleteBtn) {
+  deleteBtn.addEventListener('click', async () => {
+    if (!confirm('¿Estás seguro de eliminar la imagen de fondo?')) return;
+    
+    const heroId = document.getElementById('hero-id')?.value;
+    try {
+      if (heroId) {
+        await sb.from('hero_content').update({ background_image: '' }).eq('id', heroId);
+      }
       showToast('✅ Imagen eliminada');
       setTimeout(() => location.reload(), 1000);
+    } catch (err) {
+      showToast('❌ Error al eliminar: ' + err.message);
+    }
+  });
+}
     });
 
     document.getElementById('hero-form').addEventListener('submit', async (e) => {
