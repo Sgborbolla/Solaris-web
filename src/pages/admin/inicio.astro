@@ -2,17 +2,19 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { supabase } from '../../lib/supabase.js';
 
-// 1. Obtener datos de la sección Hero (título, subtítulo, imagen de fondo)
-const { data: hero } = await supabase.from('hero').select('*').single();
+// 1. Obtener datos de la sección Hero (si no existe, usa objeto vacío)
+const { data: heroData } = await supabase.from('hero').select('*').single();
+const hero = heroData || {};
 
-// 2. Obtener galería (evita el error "gallerySlots is not defined")
-const { data: gallerySlots } = await supabase.from('gallery').select('*');
+// 2. Obtener galería (si no existe, usa array vacío para evitar el error de lectura '[0]')
+const { data: galleryData } = await supabase.from('gallery').select('*');
+const gallerySlots = galleryData || [];
 
-// 3. Obtener configuración de imagen de hero (si se usa site_settings)
+// 3. Obtener configuración de imagen de hero (site_settings)
 let hero_image = '';
-const { data: heroData } = await supabase.from('site_settings').select('value').eq('key', 'hero_image').single();
-if (heroData) {
-  hero_image = heroData.value;
+const { data: settingData } = await supabase.from('site_settings').select('value').eq('key', 'hero_image').single();
+if (settingData) {
+  hero_image = settingData.value;
 }
 ---
 <AdminLayout title="Editar Inicio" activeTab="inicio">
